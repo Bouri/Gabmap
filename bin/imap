@@ -1,5 +1,5 @@
 #!/bin/sh
-source INIT.sh
+. INIT.sh
 export PYTHON=$PYTHON3
 export PYTHONPATH=$PYTHON3PATH
 $PYTHON imap.py
