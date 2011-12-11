@@ -45,6 +45,8 @@ mailfrom = os.environ['MAILFROM']
 smtpserv = os.environ['SMTPSERV']
 smtpuser = os.environ.get('SMTPUSER', '')
 smtppass = os.environ.get('SMTPPASS', '')
+smtpport = os.environ.get('SMTPPORT', 25)
+smtpssl = os.environ.get('SMTSSL', False)
 
 contact     = os.environ.get('CONTACT',     '')
 contactname = os.environ.get('CONTACTNAME', '')

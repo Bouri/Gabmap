@@ -34,7 +34,10 @@ def sendmail(address, subject, text):
     msg['Subject'] = subject
 
     try:
-        server = smtplib.SMTP(_c.smtpserv)
+        if _c.smtpssl:
+            server = smtplib.SMTP_SSL(_c.smtpserv, _c.smtpport)
+        else:
+            server = smtplib.SMTP(_c.smtpserv, _c.smtpport)
         if _c.smtpuser and _c.smtppass:
             server.login(_c.smtpuser, _c.smtppass)
         server.sendmail(_c.mailfrom, address, msg.as_string())
