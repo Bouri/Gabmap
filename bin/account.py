@@ -224,7 +224,8 @@ def actionCreate():
     fp.close()
     os.chmod(pending, 0o600)
 
-    u.mail.sendmail(email, 'Confirm your account', '\nVisit the url below to confirm your account\n\n' + url)
+    u.mail.sendmail(email, 'Confirm your account', 
+                    '\nVisit the url below to confirm your account\n\n' + url + '\n')
     u.html.exitMessage(
         'Create account',
         '''A message was sent to {}
