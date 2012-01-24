@@ -1,0 +1,49 @@
+
+These are some unorganized notes regarding the requirements and
+installation of the Gabmap files to a new environment.
+
+The web application consists of a set of CGI scripts written in
+python. The python scripts are started from shell scripts after
+loading settings from a configuration scrip "INIT.sh". 
+
+Typically, you would run the application from a user's web home, which
+by default is $HOME/public_html/. For the rest of the document we
+assume that you unpacked the package under $HOME/public_html/gabmap/,
+and filenames and path names are given relative to this directory.
+
+The applications start from script bin/home, and the whole(?) gabmap
+directory should be accessible through the web.
+
+The web server should allow executing CGI script in bin/ directory.
+This can either be allowed in web server configuration like (for
+apache):
+    <Directory _path_to_gabmap_/bin/>
+        Options ExecCGI
+        SetHandler cgi-script
+    </Directory>
+or if allowed by the web server, using a .htaccess file in the bin/
+directory with the same content:
+        Options ExecCGI
+        SetHandler cgi-script
+
+The main configuration file for the utility is INIT.sh, the package
+comes with a template, INIT.sh.template. You should copy this file as
+INIT.sh, and edit to reflect the local settings.
+
+The application requires python pyproj library. This  is not packaged
+for Debian unstable (as of 2011-12-12), so it needs to be installed
+manually. If it is installed in a non-standard path, the installation
+path of pyproj is required to be in PYTHON3PATH variable in INIT.sh.
+
+The RuG/L04 package needs to be installed and in PATH.
+
+DATADIR should include a directory named .queue with read/write
+permission to the web-server.
+
+You need to type 'make' in the directory `util'.
+
+R iL04 package has to be installed, and the R_LIBS has to be set
+to correct location before creation of any project.
+
+Another (relatively) non-standard python package requirement:
+colormath.
