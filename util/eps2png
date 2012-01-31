@@ -11,7 +11,7 @@ for i in *.eps
 do
     case $i in
 	*mapover.eps)
-	    tt="-transparent #7F7F7F"
+	    tt="-transparent #929292"
 	    ;;
 	*)
 	    tt=""
