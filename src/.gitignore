@@ -1,0 +1,5 @@
+.depend
+clusterdet
+clusterdet_cmdline.c
+clusterdet_cmdline.h
+*.o

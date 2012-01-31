@@ -1,0 +1,20 @@
+package "clusterdet"
+version "0.1"           # This should alwasy be overwritten
+description "clusterdet calculates determinants of a given cluster"
+usage "usage"
+purpose "This utility is part of Gabmap (http://www.gabmap.nl/."
+
+
+option "debug" d "debug level. --quiet overrides" 
+        int default="1" optional
+
+option "quiet" q "be quiet, same as --debug=0" optional
+
+option "output" o "output file name" 
+        string typestr="filename" default="-" optional
+
+option "clgroups" C "file to read cluster groups" 
+        string typestr="filename" default="clgroups.txt" optional
+
+option "cluster" c "number of the target cluster" 
+        int required

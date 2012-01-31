@@ -88,6 +88,9 @@ elif p0.startswith('clusters'):
 elif p0.startswith('clumaps'):
     import p.clumaps
     p.clumaps.makepage(path)
+elif p0.startswith('cludet2'):
+    import p.cludet2
+    p.cludet2.makepage(path)
 elif p0.startswith('cludet'):
     import p.cludet
     p.cludet.makepage(path)

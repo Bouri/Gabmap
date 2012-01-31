@@ -372,16 +372,13 @@ def makepage(path):
             '''.format(u.config.appurl, project))
             fp = open('score.txt', 'rt')
             for line in fp:
-                a, b, c, f, g = line.split()
-                if f.split(':')[0] == '0':
-                    continue
-                gg = g[2:-5]
-                if gg == curitem:
+                r, w, b, f = line.split()
+                item = f[2:-5]
+                if item == curitem:
                     sel = ' selected="selected"'
                 else:
                     sel = ''
-                sys.stdout.write('<option value="{}"{}>{} &nbsp; {} &nbsp; {}</option>\n'.format(
-                    gg, sel, a, _toStrHtml(gg), f))
+                sys.stdout.write('<option value="{}"{}>{} &nbsp; {} &nbsp; {}</option>\n'.format(item, sel, r, _toStrHtml(item)))
             sys.stdout.write('''
             </select>
             <input type="submit" value="Select item">

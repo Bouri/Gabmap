@@ -1,0 +1,47 @@
+UTIL={0[appdir]}/util
+BIN=/home/cagri/public_html/gabmap/src
+LO4=/data/gabmap/RuG-L04/bin
+PYTHON3={0[python3]}
+
+NPLACES=`sed '/^'\#'/d;/^'\$$'/d' ../data/labels.txt |wc -l`
+
+OK:  {0[target]} ../data/OK
+
+s2: score.txt
+
+score.txt: clgroups.txt ../data/_/*.data.ftr currentcl 
+	mkdir -p _
+	rm -f _/*.diff
+	for i in ../data/_/*.data.ftr; do \
+		$(LO4)/leven-r -n $(NPLACES) \
+				-l ../data/labels.txt \
+				-s ../data/features-float.txt \
+				-o _/`basename $$i .data.ftr`.diff\
+				$$i;\
+	done
+	$(BIN)/clusterdet -c `cat currentcl` \
+		-C clgroups.txt \
+		_/*.diff | sort -n > score.txt
+
+
+s1: clmap.png
+
+clmap.png: clmap.eps
+	$(PYTHON3) $(UTIL)/smappost clmap.eps
+	$(UTIL)/eps2png
+
+clmap.eps: map.cfg cluster.wm nclusters
+	$(LO4)/mapclust -o clmap.eps \
+		-u /home/cagri/public_html/gabmap/templates/palette12.txt \
+		map.cfg cluster.wm `cat nclusters`
+
+map.cfg: ../map/map.cfg
+	grep -v ^markers: ../map/map.cfg > map.cfg
+
+
+clgroups.txt: cluster.wm nclusters
+	$(LO4)/clgroup -n `cat nclusters` -i -o clgroups.txt cluster.wm
+
+cluster.wm: ../diff/diff.txt
+	$(LO4)/cluster -o cluster.wm -wm ../diff/diff.txt
+
