@@ -1,16 +1,15 @@
-UTIL={0[appdir]}/util
-BIN=/home/cagri/public_html/gabmap/src
-LO4=/data/gabmap/RuG-L04/bin
+APP={0[appdir]}
 PYTHON3={0[python3]}
 
-NPLACES=`sed '/^'\#'/d;/^'\$$'/d' ../data/labels.txt |wc -l`
+#NPLACES=`sed '/^'\#'/d;/^'\$$'/d' ../data/labels.txt |wc -l`
+NPLACES=`cat ../data/labels.txt |wc -l`
 
 OK:  {0[target]} ../data/OK
 
 s3: currentlist.txt
 
 currentlist.txt: clgroups.txt currentitem currentcl
-	$(BIN)/count_forms.py \
+	$(APP)/util/count_forms \
 				clgroups.txt \
 				`cat currentcl` \
 				../data/_/`cat currentitem`.data \
@@ -23,35 +22,33 @@ score.txt: clgroups.txt ../data/_/*.data.ftr currentcl
 	mkdir -p _
 	rm -f _/*.diff
 	for i in ../data/_/*.data.ftr; do \
-		$(LO4)/leven-r -n $(NPLACES) \
+		leven-r -n $(NPLACES) \
 				-l ../data/labels.txt \
 				-s ../data/features-float.txt \
 				-o _/`basename $$i .data.ftr`.diff\
 				$$i;\
 	done
-	$(BIN)/clusterdet -c `cat currentcl` \
-		-C clgroups.txt \
-		_/*.diff | sort -n > score.txt
+	$(APP)/util/clusterdet -c `cat currentcl` \
+		               -C clgroups.txt \
+		               _/*.diff | sort -n > score.txt
 
 
 s1: clmap.png
 
 clmap.png: clmap.eps
-	$(PYTHON3) $(UTIL)/smappost clmap.eps
-	$(UTIL)/eps2png
+	$(PYTHON3) $(APP)/util/smappost clmap.eps
+	$(APP)/util/eps2png
 
 clmap.eps: map.cfg cluster.wm nclusters
-	$(LO4)/mapclust -o clmap.eps \
-		-u /home/cagri/public_html/gabmap/templates/palette12.txt \
+	mapclust -o clmap.eps \
+		-u $(APP)/templates/palette12.txt \
 		map.cfg cluster.wm `cat nclusters`
 
 map.cfg: ../map/map.cfg
 	grep -v ^markers: ../map/map.cfg > map.cfg
 
-
 clgroups.txt: cluster.wm nclusters
-	$(LO4)/clgroup -n `cat nclusters` -i -o clgroups.txt cluster.wm
+	clgroup -n `cat nclusters` -i -o clgroups.txt cluster.wm
 
 cluster.wm: ../diff/diff.txt
-	$(LO4)/cluster -o cluster.wm -wm ../diff/diff.txt
-
+	cluster -o cluster.wm -wm ../diff/diff.txt

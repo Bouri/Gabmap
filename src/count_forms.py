@@ -1,4 +1,4 @@
-#!/usr/bin/python3.2
+#!__PYTHON3__
 
 """
 Usage count_forms clgroups_file cluster_number data_file
