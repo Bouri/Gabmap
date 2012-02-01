@@ -79,7 +79,8 @@ def setCluster():
                                  'python3': u.config.python3, 
                                  'target': 's2'}))
     u.queue.run()
-    time.sleep(2)
+    while(os.access('QUEUED', os.F_OK)):
+        time.sleep(2)
 
 
 #| main
