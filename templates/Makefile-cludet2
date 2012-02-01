@@ -7,6 +7,16 @@ NPLACES=`sed '/^'\#'/d;/^'\$$'/d' ../data/labels.txt |wc -l`
 
 OK:  {0[target]} ../data/OK
 
+s3: currentlist.txt
+
+currentlist.txt: clgroups.txt currentitem currentcl
+	$(BIN)/count_forms.py \
+				clgroups.txt \
+				`cat currentcl` \
+				../data/_/`cat currentitem`.data \
+				| sort -rn \
+				> currentlist.txt
+
 s2: score.txt
 
 score.txt: clgroups.txt ../data/_/*.data.ftr currentcl 

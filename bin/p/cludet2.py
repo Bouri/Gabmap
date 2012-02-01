@@ -117,7 +117,7 @@ def makepage(path):
     if (os.access('score.txt', os.F_OK)):
         sys.stdout.write('''
         <h3 id="s3">step 3: select item</h3>
-        <form action="{}bin/cludetform" method="post" enctype="multipart/form-data">
+        <form action="{}bin/cludet2form" method="post" enctype="multipart/form-data">
         <input type="hidden" name="p" value="{}">
         <input type="hidden" name="action" value="item">
         Items sorted by value:
@@ -140,8 +140,10 @@ def makepage(path):
             else:
                 sel = ''
             sys.stdout.write('''
-                <option value="{}"{}>{} ({} / {}) &nbsp; {} </option>\n
-            '''.format(item, sel, r, w, b,  _toStrHtml(item)))
+                <option value="{}"{}>{:.2f} ({:.2f} / {:.2f}) &nbsp; {} 
+                </option>\n
+            '''.format(item, sel, 
+                       float(r), float(w), float(b),  _toStrHtml(item)))
 
         sys.stdout.write('''
         </select>
@@ -152,6 +154,47 @@ def makepage(path):
         </form>
         <p>
         '''.format(project))
+
+    if (os.access('currentlist.txt', os.F_OK)):
+        fp = open('currentitem', 'rt')
+        curitem = fp.read().strip()
+        fp.close()
+
+        fp = open('score.txt')
+        for line in fp:
+            r, btw, wtn, item = line.strip().split()
+            if item[2:-5] == curitem:
+                break
+        fp.close()
+
+        sys.stdout.write('''
+        Current item: {}
+        <table cellspacing="0" cellpadding="0" border="0">
+        <tr><td>Ratio:&nbsp;  <td>{}
+        <tr><td>&mdash; Average distance within:&nbsp;  <td>{}
+        <tr><td>&mdash; Average distance between:&nbsp; <td>{}
+        </table>
+        '''.format(_toStrHtml(curitem), r, wtn, btw))
+
+        fp = open("currentlist.txt", "rt")
+        flip = False
+        sys.stdout.write('''
+            <table><tr><th style="padding-right:2em">Patterns in the cluster</th>
+                       <th>Patterns not in the cluster</th>
+                   </tr>
+                <tr valign="top"><td><ul>
+        ''')
+        for line in fp:
+            cin, cout, form = line.split('\t')
+            if int(cin) == 0 and not flip:
+                flip = True
+                sys.stdout.write('</ul></td><td><ul>')
+            sys.stdout.write('''<li><span class="ipa2">{}</span> &nbsp; 
+                                {}:{}<br> 
+                            '''.format(_toStrHtml(form, True), cin, cout))
+        sys.stdout.write('</ul></td></tr></table>\n')
+        fp.close()
+
 
 #    sys.stdout.write('\n</div>\n')
     sys.stdout.write('</div>')

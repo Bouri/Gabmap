@@ -46,7 +46,7 @@ def setNumber():
     fp = open('nclusters', 'wt')
     fp.write('{}\n'.format(n))
     fp.close()
-    for f in 'score.txt currentcl'.split():
+    for f in 'score.txt currentcl currentlist.txt'.split():
             if os.access(f, os.F_OK):
                 os.remove(f);
     u.queue.enqueue(path + '/cludet2', 
@@ -68,7 +68,7 @@ def setCluster():
     fp = open('currentcl', 'wt')
     fp.write('{}\n'.format(c))
     fp.close()
-    for f in 'score.txt'.split():
+    for f in 'score.txt currentlist.txt'.split():
             if os.access(f, os.F_OK):
                 os.remove(f);
     fp = open('{}/templates/Makefile-cludet2'.format(u.config.appdir), 'r')
@@ -82,6 +82,26 @@ def setCluster():
     while(os.access('QUEUED', os.F_OK)):
         time.sleep(2)
 
+def setItem():
+    i = getval('item')
+    if not i:
+        return
+    for f in 'currentlist.txt'.split():
+            if os.access(f, os.F_OK):
+                os.remove(f);
+    fp = open('currentitem', 'wt')
+    fp.write('{}\n'.format(i))
+    fp.close()
+    fp = open('{}/templates/Makefile-cludet2'.format(u.config.appdir), 'r')
+    make = fp.read()
+    fp.close()
+    u.queue.enqueue(path + '/cludet2', 
+                    make.format({'appdir': u.config.appdir, 
+                                 'python3': u.config.python3, 
+                                 'target': 's3'}))
+    u.queue.run()
+    while(os.access('QUEUED', os.F_OK)):
+        time.sleep(2)
 
 #| main
 
@@ -106,6 +126,9 @@ if not os.access('QUEUED', os.F_OK):
     elif a == 'cluster':
         setCluster()
         target = '#s2'
+    elif a == 'item':
+        setItem()
+        target = '#s3'
 
 fp = open('/tmp/cludet2.dbg', "w")
 fp.write('setting the value to: {}'.format(getval('n')))
