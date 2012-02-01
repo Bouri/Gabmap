@@ -212,7 +212,8 @@ def makepage(path):
         <tr valign="top">
         <td>Data mining
         <td><ul>
-        <li><a href="{0}bin/goto?p={1}-cludet">cluster determinants</a>
+        <li><a href="{0}bin/goto?p={1}-cludet">cluster determinants (categorical)</a>
+        <li><a href="{0}bin/goto?p={1}-cludet2">cluster determinants (distance based)</a>
         </ul>
         '''.format(u.config.appurl, path.split('-', 1)[1]))
 
