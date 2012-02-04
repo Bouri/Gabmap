@@ -31,6 +31,13 @@ def _toStrHtml(s, em=False):
 def _num2chr(m):
     return '{:c}'.format(int(m.group(1)))
 
+def _xmlescape(m):
+    return '_{}_'.format(ord(m.group()))
+
+def _iname(s):
+    s = re.sub(r'[^-+a-zA-Z0-9]', _xmlescape, s)
+    return s
+
 
 def makepage(path):
     u.path.chdir(path)
@@ -42,7 +49,7 @@ def makepage(path):
 
 #    pnum =  path.split('-')[-2].split('_')[-1]
 
-    sys.stdout.write(u.html.head(ltitle, tip=True, maptip=True))
+    sys.stdout.write(u.html.head(ltitle, tip=True, maptip=True, tipfile='tip.html'))
     sys.stdout.write('''
     {}
     <div class="pgcludet">
@@ -116,7 +123,7 @@ def makepage(path):
 
     if (os.access('score.txt', os.F_OK)):
         sys.stdout.write('''
-        <h3 id="s3">step 3: select item</h3>
+        <h3 id="s3">Step 3: select item</h3>
         <form action="{}bin/cludet2form" method="post" enctype="multipart/form-data">
         <input type="hidden" name="p" value="{}">
         <input type="hidden" name="action" value="item">
@@ -176,25 +183,74 @@ def makepage(path):
         </table>
         '''.format(_toStrHtml(curitem), r, wtn, btw))
 
-        fp = open("currentlist.txt", "rt")
-        flip = False
         sys.stdout.write('''
-            <table><tr><th style="padding-right:2em">Patterns in the cluster</th>
-                       <th>Patterns not in the cluster</th>
+            <h3 id="s4">Step 4: show the distribution of relevant forms</h3>
+            <form action="{}bin/cludet2form" method="post" 
+                  enctype="multipart/form-data">
+            <input type="hidden" name="p" value="{}">
+            <input type="hidden" name="action" value="formdist">
+            <table><tr><th style="padding-right:2em">Patterns in the cluster
+                       </th>
+                       <th>Patterns not in the cluster
+                       </th>
                    </tr>
-                <tr valign="top"><td><ul>
-        ''')
-        for line in fp:
-            cin, cout, form = line.split('\t')
-            if int(cin) == 0 and not flip:
-                flip = True
-                sys.stdout.write('</ul></td><td><ul>')
-            sys.stdout.write('''<li><span class="ipa2">{}</span> &nbsp; 
-                                {}:{}<br> 
-                            '''.format(_toStrHtml(form, True), cin, cout))
-        sys.stdout.write('</ul></td></tr></table>\n')
-        fp.close()
+        '''.format(u.config.appurl, project))
 
+        formsin = {}
+        formsout = {}
+
+#        if (os.access('selectedforms.txt', os.F_OK)):
+#            fp = open("currentlist.txt", "rt")
+#            for line in 
+
+        fp = open("currentlist.txt", "rt")
+        for line in fp:
+            cin, cout, form = line.strip().split('\t')
+            if int(cin) == 0:
+                formsout[form] = (cin, cout)
+            else:
+                formsin[form] = (cin, cout)
+        fp.close()
+        
+
+        selectedforms = set()
+        if (os.access('selectedforms.txt', os.F_OK)):
+            fp = open('selectedforms.txt', 'rt')
+            for line in fp:
+                selectedforms.add(_toStrHtml(line.strip()))
+                sys.stdout.write('''<!-- {} -->\n'''.format(_toStrHtml(line.strip())))
+
+        select_len = len(formsin)
+        if select_len > 10: select_len = 10
+        sys.stdout.write('''
+                <tr valign="top"> <td>
+                <select name="formsin" multiple="multiple" size="{}" class="ipaw">
+        '''.format(select_len))
+
+        for form, (cin, cout) in formsin.items():
+            if (form in selectedforms): sel=' selected="selected"'
+            else: sel = ''
+            sys.stdout.write('''<!-- {} -->\n'''.format(form))
+            sys.stdout.write('''<option value="{}"{}>{} ({}:{})</option>\n
+            '''.format(_iname(form), sel, _toStrHtml(form, True), cin, cout))
+
+        select_len = len(formsout)
+        if select_len > 10: select_len = 10
+        sys.stdout.write('''</select></td><td>\n
+               <select name="formsout" multiple="multiple" size="{}" class="ipa2">
+        '''.format(select_len))
+        for form, (cin, cout) in formsout.items():
+            if (form in selectedforms): sel=' selected="selected"'
+            else: sel = ''
+            sys.stdout.write('''<option value="{}"{}>{} ({}:{})</option>\n
+            '''.format(_iname(form), sel, _toStrHtml(form, True), cin, cout))
+        sys.stdout.write('</select></td></tr></table>\n')
+        sys.stdout.write('<input type="submit" value="Show distribution map">\n')
+        sys.stdout.write('</form>')
+
+        if (os.access('distmap.png', os.F_OK)):
+            sys.stdout.write(u.html.img(p + '-distmap', usemap="map1", 
+                                idx=1, pseudoforce=True) + '\n')
 
 #    sys.stdout.write('\n</div>\n')
     sys.stdout.write('</div>')

@@ -6,7 +6,23 @@ NPLACES=`cat ../data/labels.txt |wc -l`
 
 OK:  {0[target]} ../data/OK
 
-s3: currentlist.txt
+s4: distmap.png selectedforms.txt
+
+distmap.png: distmap.eps
+	$(APP)/util/smappost distmap.eps
+	$(APP)/util/eps2png
+
+distmap.eps: ../map/map.cfg distmap.rgb
+	maprgb -r -o distmap.eps ../map/map.cfg distmap.rgb
+
+tip.html: ../map/image.html currentitem
+	$(APP)/util/makelongtip ../map/image.html ../data/_/`cat currentitem`.data tip.html
+
+distmap.rgb: selectedforms.txt currentitem
+	$(APP)/util/formstorgb currentitem selectedforms.txt distmap.rgb
+	
+
+s3: currentlist.txt tip.html
 
 currentlist.txt: clgroups.txt currentitem currentcl
 	$(APP)/util/count_forms \

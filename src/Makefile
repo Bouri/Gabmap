@@ -6,7 +6,7 @@ CFLAGS=$(INCLUDES) -Wall -g
 LIBS=`pkg-config --libs glib-2.0`
 LDLIBS=$(LIBS)
 
-EXEC=clusterdet count_forms
+EXEC=clusterdet count_forms formstorgb makelongtip
 BINDIR=../util
 
 %_cmdline.c: %.ggo
@@ -35,6 +35,14 @@ clean:
 include .depend
 
 count_forms: count_forms.py
+	sed s,__PYTHON3__,$(PYTHON3),g $^ > $@
+	chmod 755 $@
+
+formstorgb: formstorgb.py
+	sed s,__PYTHON3__,$(PYTHON3),g $^ > $@
+	chmod 755 $@
+
+makelongtip: makelongtip.py
 	sed s,__PYTHON3__,$(PYTHON3),g $^ > $@
 	chmod 755 $@
 

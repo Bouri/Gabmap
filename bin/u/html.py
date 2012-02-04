@@ -101,15 +101,16 @@ def iso2utf(s):
 def escape(s):
     return s.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;')
 
-def head(title='', headers='', tip=False, maptip=False):
+def head(title='', headers='', tip=False, maptip=False, tipfile='../map/image.html'):
     ''' return start of html file, including http headers '''
+
     if title:
         title = ' - ' + title
     if tip:
         headers += '\n    <script type="text/javascript" src="../tip.js"></script>'
     if maptip:
         try:
-            fp = open('../map/image.html', 'rt', encoding='utf-8')
+            fp = open(tipfile, 'rt', encoding='utf-8')
             body = fp.read()
             fp.close()
         except:

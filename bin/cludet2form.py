@@ -86,7 +86,7 @@ def setItem():
     i = getval('item')
     if not i:
         return
-    for f in 'currentlist.txt'.split():
+    for f in 'currentlist.txt selectedforms.txt'.split():
             if os.access(f, os.F_OK):
                 os.remove(f);
     fp = open('currentitem', 'wt')
@@ -99,6 +99,34 @@ def setItem():
                     make.format({'appdir': u.config.appdir, 
                                  'python3': u.config.python3, 
                                  'target': 's3'}))
+    u.queue.run()
+    while(os.access('QUEUED', os.F_OK)):
+        time.sleep(2)
+
+def setForms():
+    fin = getval('formsin')
+    fout = getval('formsout')
+    fp = open('/tmp/cludet2.dbg', "w")
+    fp.write('{}\n'.format(fin))
+    fp.write('{}\n'.format(fout))
+    fp.close()
+
+    if not (fin or fout):
+        return
+
+    fp = open('selectedforms.txt', 'wt')
+    if (fin):
+        fp.write('{}\n'.format(fin))
+    if (fout):
+        fp.write('{}\n'.format(fout))
+    fp.close()
+    fp = open('{}/templates/Makefile-cludet2'.format(u.config.appdir), 'r')
+    make = fp.read()
+    fp.close()
+    u.queue.enqueue(path + '/cludet2', 
+                    make.format({'appdir': u.config.appdir, 
+                                 'python3': u.config.python3, 
+                                 'target': 's4'}))
     u.queue.run()
     while(os.access('QUEUED', os.F_OK)):
         time.sleep(2)
@@ -129,9 +157,8 @@ if not os.access('QUEUED', os.F_OK):
     elif a == 'item':
         setItem()
         target = '#s3'
+    elif a == 'formdist':
+        setForms()
+        target = '#s3'
 
-fp = open('/tmp/cludet2.dbg', "w")
-fp.write('setting the value to: {}'.format(getval('n')))
-fp.write('Location: goto?p={}-cludet2{}\n\n'.format(path, target))
-fp.close()
 sys.stdout.write('Location: goto?p={}-cludet2{}\n\n'.format(path, target))
