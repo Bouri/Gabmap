@@ -48,7 +48,7 @@ for line in fp:
             break
         elif (re.search('>' + place + '<', line)):
             fpout.write(line.replace('>' + place + '<',
-                           '>' + place + ' (' + formstr + ')<'))
+                           '>' + place + ' (<span class="ipa">' + formstr + '</span>)<'))
 
 fp.close()
 fpout.close()
