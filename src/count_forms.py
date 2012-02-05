@@ -12,7 +12,7 @@ the string representation of the form.
 
 """
 
-import sys
+import sys, re
 
 def _unquote(s):
     s = s.strip()
