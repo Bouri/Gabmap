@@ -20,7 +20,7 @@
 #include <libgen.h>
 #include <glib.h>
 #include <assert.h>
-#include "clusterdet_cmdline.h"
+#include "clusterdet.cmdline.h"
 #include "strutils.h"
 #include "dist_matrix.h"
 
@@ -58,30 +58,29 @@ int main(int argc, char **argv)
     for (i = 0; i < opt.inputn; i++) { // for each item (word)
         int count_within = 0,
             count_between = 0;
-        double dist_within = 0,
-            dist_between = 0;
+        double dist_within = 0.0,
+            dist_between = 0.0,
+            dist_all = 0.0;
         // read item info
         struct dist_matrix *d = read_dist_matrix(opt.input_files[i]);
 
         // calculate derminant score for the item
         int j, k;
-        for (j = 0; j < d->n; j++ ) { // for each location
-            int *cl = g_hash_table_lookup(clusters, d->labels[j]);
-            assert (cl != NULL);
-            if (*cl != opt.targetcl) continue;
+        for (j = 1; j < d->n; j++ ) { // for each location
+            for (k = 0; k < j; k++ ) { // for each location, but avoid mult. comparisons
+                int *clj = g_hash_table_lookup(clusters, d->labels[j]);
+                int *clk = g_hash_table_lookup(clusters, d->labels[k]);
+                assert (clj != NULL && clk != NULL);
 
-            for (k = 0; k < d->n; k++ ) { // for each location
-                int *cl = NULL;
-                cl = g_hash_table_lookup(clusters, d->labels[k]);
-                if (cl == NULL) {
-                    fprintf(stderr, "Not in any cluster? `%s'\n", d->labels[k]);
-                    exit(1);
-                }
-
-                if (*cl == opt.targetcl) {
+                if (*clj != opt.targetcl && *clk != opt.targetcl) {
+                    // irrelevant sites, useful only for normalization
+                    dist_all = get_distance(d, j, k);
+                } else if (*clj == opt.targetcl && *clk == opt.targetcl) {
+                    // both gropus are in target cluster: between
                     count_within++;
                     dist_within += get_distance(d, j, k);
                 } else {
+                    // one in one out: between
                     count_between++;
                     dist_between += get_distance(d, j, k);
                 }

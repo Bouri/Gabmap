@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 #include "strutils.h"
 #include "dist_matrix.h"
 
@@ -192,7 +193,11 @@ struct dist_matrix *read_dist_matrix(char *fname)
     while (i < ((d->n * (d->n -1)) / 2)) {
         assert(!feof(fp));
         if (buf[0] != '#' && buf[0] != '\n') {
-            d->diff[i] = atof(str_strip(buf, " \t\n\r"));
+            if (!strncmp("NA", buf, 2)) {
+                d->diff[i] = NAN;
+            } else {
+                d->diff[i] = atof(str_strip(buf, " \t\n\r"));
+            }
             i++;
         }
         fgets(buf, 1024, fp);

@@ -9,15 +9,15 @@ LDLIBS=$(LIBS)
 EXEC=clusterdet count_forms formstorgb makelongtip
 BINDIR=../util
 
-%_cmdline.c: %.ggo
-	gengetopt --unamed-opts --set-version=$(VERSION) -i $^ -F $(^:%.ggo=%_cmdline)
+%.cmdline.c: %.ggo
+	gengetopt --unamed-opts --set-version=$(VERSION) -i $^ -F $(^:%.ggo=%.cmdline)
 
-%_cmdline.h: %.ggo
-	gengetopt --unamed-opts --set-version=$(VERSION) -i $^ -F $(^:%.ggo=%_cmdline)
+%.cmdline.h: %.ggo
+	gengetopt --unamed-opts --set-version=$(VERSION) -i $^ -F $(^:%.ggo=%.cmdline)
 
-CSRCS=clusterdet.c clusterdet_cmdline.c strutils.c dist_matrix.c
+CSRCS=clusterdet.c strutils.c dist_matrix.c
 
-COBJS=$(CSRCS:.c=.o)
+COBJS=$(CSRCS:.c=.o) clusterdet.cmdline.o
 
 OBJECTS=$(COBJS)
 SRCS=$(CSRCS)
@@ -30,7 +30,7 @@ depend:
 	$(CC) $(CFLAGS) -MM -MG $(SRCS) >.depend
 
 clean:
-	rm -f $(OBJECTS) *_cmdline.[ch] clusterdet
+	rm -f $(OBJECTS) *.cmdline.[ch] clusterdet
 
 include .depend
 
