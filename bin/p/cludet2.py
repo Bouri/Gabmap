@@ -169,7 +169,7 @@ def makepage(path):
 
         fp = open('score.txt')
         for line in fp:
-            r, btw, wtn, item = line.strip().split()
+            r, wtn, btw, item = line.strip().split()
             if item[2:-5] == curitem:
                 break
         fp.close()
