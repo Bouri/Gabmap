@@ -1,7 +1,7 @@
 .depend
 clusterdet
-clusterdet_cmdline.c
-clusterdet_cmdline.h
+clusterdet.cmdline.c
+clusterdet.cmdline.h
 *.o
 count_forms
 formstorgb
