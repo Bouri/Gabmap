@@ -1,15 +1,13 @@
 /*
  * clusterdet.c: Calculate cluster determinants.
  *
- * The aim of this utility is to provide a single 
- * interface for different cluster determinants displayed
- * by Gabmap. The current version only implements a measure
- * similar to Fisher's linear discriminant using Levenshtein
- * distances.
+ * The aim of this utility is to provide a single interface for different
+ * cluster determinants displayed by Gabmap. The current version only
+ * implements a measure similar to Fisher's linear discriminant using
+ * Levenshtein distances.
  *
- * Inputs:
- *      cluster information as output by RuG/L04 clgroup
- *      a set of distance matrix files created by RuG/L04 leven
+ * Inputs: cluster information as output by RuG/L04 clgroup a set of distance
+ * matrix files created by RuG/L04 leven
  *
  */
 
@@ -17,6 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <malloc.h>
+#include <math.h>
 #include <libgen.h>
 #include <glib.h>
 #include <assert.h>
@@ -31,21 +30,25 @@ struct options {
     int  debug;         // 0 quiet, 1 normal, >1 verbose
     char *clgroups;     // file to read cluster information from
     int  targetcl;      // the target cluster
+    long  na_limit;
+    double  na_rate;
 } opt;
 
 
-GHashTable *read_cllist(const char *fname, int *clmax);
+GHashTable *read_cllist(const char *fname, int **clcount, int *clmax);
 void parse_cmdline(int argc, char **argv, struct options *opt);
 
 
 int main(int argc, char **argv)
 {
     int clmax;
+    int *clcount = NULL;
+    long na_limit_btw = 0, na_limit_wtn = 0;
     // process command line
     parse_cmdline(argc, argv, &opt);
 
     // read cluster info
-    GHashTable *clusters = read_cllist(opt.clgroups, &clmax);
+    GHashTable *clusters = read_cllist(opt.clgroups, &clcount, &clmax);
 
     if (opt.targetcl > clmax) {
         fprintf(stderr, "Target cluster (%d) is not in `%s'.\n", 
@@ -55,9 +58,28 @@ int main(int argc, char **argv)
 
     // for each item
     int i;
+
+//    for(i = 0; i <= clmax; i++) {
+//        printf("%d\t %d\n", i, clcount[i]);
+//    }
+    
+    // warn here if target cluster is too small
+
+    if (opt.na_limit == 0) {
+        na_limit_btw = lround(opt.na_rate * clcount[opt.targetcl]);
+        na_limit_wtn = lround(opt.na_rate 
+                              * (clcount[0] - clcount[opt.targetcl]));
+    } else {
+        na_limit_btw = na_limit_wtn = opt.na_limit;
+    }
+
+
     for (i = 0; i < opt.inputn; i++) { // for each item (word)
         int count_within = 0,
-            count_between = 0;
+            count_between = 0,
+            na_within = 0,
+            na_between = 0,
+            na_all = 0;
         double dist_within = 0.0,
             dist_between = 0.0,
             dist_all = 0.0;
@@ -72,27 +94,48 @@ int main(int argc, char **argv)
                 int *clk = g_hash_table_lookup(clusters, d->labels[k]);
                 assert (clj != NULL && clk != NULL);
 
+                double dist = get_distance(d, j, k);
+
                 if (*clj != opt.targetcl && *clk != opt.targetcl) {
                     // irrelevant sites, useful only for normalization
-                    dist_all = get_distance(d, j, k);
+                    if (isnan(dist)) {
+                        na_all++;
+                    } else {
+                        dist_all += dist;
+                    }
                 } else if (*clj == opt.targetcl && *clk == opt.targetcl) {
-                    // both gropus are in target cluster: between
-                    count_within++;
-                    dist_within += get_distance(d, j, k);
+                    // both gropus are in target cluster: within
+                    if (isnan(dist)) {
+                        na_within++;
+                    } else {
+                        count_within++;
+                        dist_within += dist;
+                    }
                 } else {
                     // one in one out: between
-                    count_between++;
-                    dist_between += get_distance(d, j, k);
+                    if (isnan(dist)) {
+                        na_between++;
+                    } else {
+                        count_between++;
+                        dist_between += dist;
+                    }
                 }
             }
         }
 
-        double avg_d_within = dist_within / (double) count_within;
-        double avg_d_between = dist_between / (double) count_between;
-        double r = (avg_d_within == 0.0 && avg_d_between == 0.0)
-                    ? 1.0
-                    : avg_d_within / avg_d_between;
-            
+        double avg_d_within, avg_d_between, r;
+
+        if(na_between > na_limit_btw ||
+           na_within > na_limit_wtn) {
+            avg_d_within = avg_d_between = r = NAN;
+        } else {
+            avg_d_within  = dist_within  / (double) count_within;
+            avg_d_between = dist_between / (double) count_between;
+            r = (avg_d_within == 0.0 && avg_d_between == 0.0)
+                        ? 1.0
+                        : avg_d_within / avg_d_between;
+        }
+
         // output the score
         printf("%f\t%f\t%f\t%s\n", r, avg_d_within, avg_d_between,
                                    opt.input_files[i]);
@@ -101,21 +144,25 @@ int main(int argc, char **argv)
     }
     // cleanup
     g_hash_table_destroy(clusters);
+    free(clcount);
     return 0;
 }
 
 
 /* read_clgroup(): read a cluster list prepared by RuG/L04 clgroup
  *                 into a hash table, and store the maximum cluster 
- *                 number in clmax
- *                 
+ *                 number in clmax. clcount is an array of integirs 
+ *                 with count of each cluster number. clcount[0] is 
+ *                 the total number of clusters.
  */
-GHashTable *read_cllist(const char *fname, int *clmax)
+GHashTable *read_cllist(const char *fname, int **clcount, int *clmax)
 {
     GHashTable *cllist = g_hash_table_new_full(g_str_hash, g_str_equal, free, free);;
     FILE *fp = fopen(fname, "r");
     char    buf[1024]; // TODO: make this dynamic
-
+    int     cl_alloc = 64;
+    int     *cbuf = calloc(cl_alloc, sizeof (*clcount));
+    
     if (!fp) {
         fprintf(stderr, "Cannot open file `%s'.\n", fname);
         exit(1);
@@ -132,10 +179,22 @@ GHashTable *read_cllist(const char *fname, int *clmax)
             location = strdup(str_strip(strtok(NULL, "\t\n\r"), " \""));
             g_hash_table_insert(cllist, location, cnum);
             if (*cnum > *clmax) *clmax = *cnum;
+
+            if(*cnum >= cl_alloc)  {
+                cbuf = realloc(cbuf, (*clmax + 1) * sizeof (*cbuf));
+                int i;
+                for(i = cl_alloc+1; i <= *cnum ; i++) {
+                    cbuf[i] = 0;
+                }
+                cl_alloc = *cnum + 1;
+            }
+            ++cbuf[*cnum];
+            ++cbuf[0];
         }
         fgets(buf, 1024, fp);
     }
 
+    *clcount = realloc(cbuf, (*clmax + 1) * sizeof (*clcount));
     fclose(fp);
     return cllist;
 }
@@ -169,6 +228,15 @@ void parse_cmdline(int argc, char **argv, struct options *opt)
     if (ggo.quiet_given) opt->debug = 0;
     opt->clgroups = strdup(ggo.clgroups_arg);
     opt->targetcl = ggo.cluster_arg;
+
+    opt->na_rate = 0.0;
+    opt->na_limit = 0;
+
+    if (ggo.ignore_na_arg > 1.0)  {
+        opt->na_limit = lround(ggo.ignore_na_arg);
+    } else {
+        opt->na_rate = ggo.ignore_na_arg;
+    }
 
     cmdline_parser_free (&ggo);
 }

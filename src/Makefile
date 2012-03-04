@@ -3,7 +3,7 @@ PYTHON3=/usr/bin/python3.2
 
 INCLUDES=`pkg-config --cflags glib-2.0`
 CFLAGS=$(INCLUDES) -Wall -g 
-LIBS=`pkg-config --libs glib-2.0`
+LIBS=`pkg-config --libs glib-2.0` -lm
 LDLIBS=$(LIBS)
 
 EXEC=clusterdet count_forms formstorgb makelongtip
