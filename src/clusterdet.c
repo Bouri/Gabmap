@@ -32,6 +32,8 @@ struct options {
     int  targetcl;      // the target cluster
     long  na_limit;
     double  na_rate;
+    int norm;
+    int diff;
 } opt;
 
 
@@ -50,39 +52,41 @@ int main(int argc, char **argv)
     // read cluster info
     GHashTable *clusters = read_cllist(opt.clgroups, &clcount, &clmax);
 
-    if (opt.targetcl > clmax) {
-        fprintf(stderr, "Target cluster (%d) is not in `%s'.\n", 
-                opt.targetcl, opt.clgroups);
-        exit(1);
-    }
+//    if (opt.targetcl > clmax) {
+//        fprintf(stderr, "Target cluster (%d) is not in `%s'.\n", 
+//                opt.targetcl, opt.clgroups);
+//        exit(1);
+//    }
 
     // for each item
     int i;
 
 //    for(i = 0; i <= clmax; i++) {
-//        printf("%d\t %d\n", i, clcount[i]);
+//        fprintf(stderr, "cl%d\t %d\n", i, clcount[i]);
 //    }
     
     // warn here if target cluster is too small
 
     if (opt.na_limit == 0) {
-        na_limit_btw = lround(opt.na_rate * clcount[opt.targetcl]);
-        na_limit_wtn = lround(opt.na_rate 
-                              * (clcount[0] - clcount[opt.targetcl]));
+        int M = clcount[opt.targetcl];
+        int N = clcount[0];
+        na_limit_wtn = lround(opt.na_rate * ((double)(M * M - M) / 2.0));
+        na_limit_btw = lround(opt.na_rate * (N - M) * M);
     } else {
         na_limit_btw = na_limit_wtn = opt.na_limit;
     }
 
 
     for (i = 0; i < opt.inputn; i++) { // for each item (word)
-        int count_within = 0,
-            count_between = 0,
-            na_within = 0,
-            na_between = 0,
-            na_all = 0;
+        long count_within = 0,
+             count_between = 0,
+             count_all = 0,
+             na_within = 0,
+             na_between = 0;
+        double ssd = 0.0,
+               mean_all = 0.0;
         double dist_within = 0.0,
-            dist_between = 0.0,
-            dist_all = 0.0;
+            dist_between = 0.0;
         // read item info
         struct dist_matrix *d = read_dist_matrix(opt.input_files[i]);
 
@@ -96,13 +100,15 @@ int main(int argc, char **argv)
 
                 double dist = get_distance(d, j, k);
 
+                if(!isnan(dist)) { // online variance calculation
+                    double delta = dist - mean_all;
+                    count_all++;
+                    mean_all += delta/(double)count_all;
+                    if (count_all > 1) ssd += delta * (dist - mean_all);
+                }
+
                 if (*clj != opt.targetcl && *clk != opt.targetcl) {
                     // irrelevant sites, useful only for normalization
-                    if (isnan(dist)) {
-                        na_all++;
-                    } else {
-                        dist_all += dist;
-                    }
                 } else if (*clj == opt.targetcl && *clk == opt.targetcl) {
                     // both gropus are in target cluster: within
                     if (isnan(dist)) {
@@ -123,21 +129,38 @@ int main(int argc, char **argv)
             }
         }
 
-        double avg_d_within, avg_d_between, r;
+        double within_score, between_score, score;
 
+//fprintf(stderr,"[dbg: %s] %ld:%ld / %ld ... %ld:%ld / %ld\n", opt.input_files[i], count_within, na_within, na_limit_wtn, count_between, na_between, na_limit_btw);
+//fprintf(stderr,"[dbg] na_between: %ld / %ld\n\tna_within: %ld / %ld\n", na_between, na_limit_btw, na_within, na_limit_wtn);
         if(na_between > na_limit_btw ||
            na_within > na_limit_wtn) {
-            avg_d_within = avg_d_between = r = NAN;
+            within_score = between_score = score = NAN;
         } else {
-            avg_d_within  = dist_within  / (double) count_within;
-            avg_d_between = dist_between / (double) count_between;
-            r = (avg_d_within == 0.0 && avg_d_between == 0.0)
-                        ? 1.0
-                        : avg_d_within / avg_d_between;
+            double sd_d = sqrt(ssd/(count_all-1));
+            double avg_d_within = dist_within  / (double) count_within, 
+                   avg_d_between = dist_between / (double) count_between;
+
+            if(opt.norm) {
+                within_score  = (avg_d_within - mean_all) / sd_d;
+                between_score = (avg_d_between - mean_all) / sd_d;
+            } else {
+                within_score = avg_d_within;
+                between_score = avg_d_between;
+            }
+
+            if (opt.norm || opt.diff) {
+                score = within_score - between_score;
+            } else {
+                score = (within_score == 0.0 && between_score == 0.0)
+                      ? 1.0
+                      : within_score / between_score;
+            }
         }
 
         // output the score
-        printf("%f\t%f\t%f\t%s\n", r, avg_d_within, avg_d_between,
+//        printf("%f\t%f\t%f\t%s\n", r, avg_d_within, avg_d_between,
+        printf("%f\t%f\t%f\t%s\n", score , within_score, between_score,
                                    opt.input_files[i]);
         // cleanup
         dist_matrix_free(d);
@@ -236,6 +259,17 @@ void parse_cmdline(int argc, char **argv, struct options *opt)
         opt->na_limit = lround(ggo.ignore_na_arg);
     } else {
         opt->na_rate = ggo.ignore_na_arg;
+    }
+
+    opt->diff = 0;
+    if (ggo.diff_given) {
+        opt->diff = 1;
+    }
+
+    opt->norm = 0;
+    if (ggo.norm_given) {
+        opt->norm = 1;
+        opt->diff = 1;
     }
 
     cmdline_parser_free (&ggo);

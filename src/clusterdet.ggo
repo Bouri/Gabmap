@@ -19,6 +19,10 @@ option "clgroups" C "file to read cluster groups"
 option "cluster" c "number of the target cluster" 
         int required
 
+option "norm" n "normlize scores" optional
+
+option "diff" D "take the difference of between/wtihin score instead of division (implied by --norm)" optional
+
 option "ignore-na" I "maximum number or ratio of the NA's values \
 to tolerate while calculating averages.\n\
 If the argument is in range [0,1] it is interpreted as a ratio,\
