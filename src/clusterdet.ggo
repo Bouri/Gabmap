@@ -19,7 +19,9 @@ option "clgroups" C "file to read cluster groups"
 option "cluster" c "number of the target cluster" 
         int required
 
-option "norm" n "normlize scores" optional
+#option "normm" - "normlize scores" optional
+
+option "normm" - "normlize scores" values="none","zscore" default="none" optional
 
 option "diff" D "take the difference of between/wtihin score instead of division (implied by --norm)" optional
 

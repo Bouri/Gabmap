@@ -88,7 +88,7 @@ def makepage(path):
 
 
     sys.stdout.write('''
-    <h3 id="s2">Step 2: select cluster</h3>
+    <h3 id="s2">Step 2: select cluster and determinant parameters</h3>
     <form action="{}bin/cludet2form" method="post" enctype="multipart/form-data">
     <input type="hidden" name="p" value="{}">
     <input type="hidden" name="action" value="cluster">
@@ -101,8 +101,8 @@ def makepage(path):
     except:
         curclnum =  0
 
-    sys.stdout.write('''
-    Clusters in plot:
+    sys.stdout.write('''<table border="0">
+    <tr><td>Clusters in plot:</td><td>
     '''.format(u.config.appurl, project))
     for i in range(1, n + 1):
         if i == curclnum:
@@ -115,8 +115,45 @@ def makepage(path):
         </span>\n
         '''.format(i, c))
 
+    normm = 'none'
+    naval = 0
+    if (os.access('clusterdet-params', os.F_OK)):
+        fp = open('clusterdet-params', 'r')
+        line = fp.read().strip()
+        fp.close()
+        normm = re.search('--norm=(\S+)', line).group(1)
+        naval = re.search('--ignore-na=([0-9.-]+)', line).group(1)
+        if(re.search('--diff', line)): 
+            diffsel='checked'
+        else: 
+            diffsel=''
+
+    zselected = ""
+    nselected = ""
+    if normm == 'zscore':
+        zselected = "selected"
+    else:
+        nselected = "selected"
+
+    sys.stdout.write('''</td><tr><td>Normalization:</td><td>
+    <select name="norm">
+    <option value="none" {}>none</option>
+    <option value="zscore" {}>z-score</option>
+    </select></td></tr>
+    '''.format(nselected, zselected))
+    sys.stdout.write('''<tr><td>NA's: </td><td>
+    <input type="text" size=3 name="narate" value={}> (Either an integer, or a
+    ratio indicateing maximum number of NA's allowed.</td></tr>
+    '''.format(naval))
+
+    sys.stdout.write('''<tr><td>Difference? </td>
+           <td><input type="checkbox" name="diff" value="diff" {}>
+           if checked overall scores is `between - within',
+           otherwise `between / within'
+           </td> </table>
+    '''.format(diffsel))
     sys.stdout.write('''
-    <input type="submit" value="Select cluster">
+    <input type="submit" value="Select">
     </form>
     <p>
     ''')
@@ -155,12 +192,25 @@ def makepage(path):
         sys.stdout.write('''
         </select>
         <input type="submit" value="Select item">
-        <br>The format of the select list is 'ratio (within distance /
-        between distance) item.
-        <br>&rarr; <a href="cludet2list?p={}" target="_blank">download as list</a>
+        <br>The format of the select list is 'score (within score /
+        between score) item.
+        <br>&rarr; <a href="cludet2list?p={}&t=success" target="_blank">download as list</a><br>
         </form>
         <p>
         '''.format(project))
+
+    if (os.access('score-failed.txt', os.F_OK)):
+        fp = open('score-failed.txt')
+        linecount = 0
+        for line in fp:
+            linecount = linecount + 1
+        if (linecount > 0):
+            sys.stdout.write('''
+            {} items are ignored due to missing data (&rarr; 
+            <a href="cludet2list?p={}&t=fail" target="_blank">
+            download as list</a>)
+            '''.format(linecount, project))
+
 
     if (os.access('currentlist.txt', os.F_OK)):
         fp = open('currentitem', 'rt')
@@ -177,9 +227,9 @@ def makepage(path):
         sys.stdout.write('''
         Current item: {}
         <table cellspacing="0" cellpadding="0" border="0">
-        <tr><td>Ratio:&nbsp;  <td>{}
-        <tr><td>&mdash; Average distance within:&nbsp;  <td>{}
-        <tr><td>&mdash; Average distance between:&nbsp; <td>{}
+        <tr><td>Score:&nbsp;  <td>{}
+        <tr><td>&mdash; Within score:&nbsp;  <td>{}
+        <tr><td>&mdash; Between score:&nbsp; <td>{}
         </table>
         '''.format(_toStrHtml(curitem), r, wtn, btw))
 

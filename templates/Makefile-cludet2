@@ -29,12 +29,12 @@ currentlist.txt: clgroups.txt currentitem currentcl
 				clgroups.txt \
 				`cat currentcl` \
 				../data/_/`cat currentitem`.data \
-				| sort -rn \
+				| sort -rg \
 				> currentlist.txt
 
 s2: score.txt
 
-score.txt: clgroups.txt ../data/_/*.data.ftr currentcl 
+score.txt: clgroups.txt ../data/_/*.data.ftr currentcl clusterdet-params
 	mkdir -p _
 	rm -f _/*.diff
 	for i in ../data/_/*.data.ftr; do \
@@ -46,7 +46,11 @@ score.txt: clgroups.txt ../data/_/*.data.ftr currentcl
 	done
 	$(APP)/util/clusterdet -c `cat currentcl` \
 		               -C clgroups.txt \
-		               _/*.diff | sort -n > score.txt
+					   `cat clusterdet-params` \
+		               _/*.diff | sort -g > score-tmp.txt
+	grep -v '\<nan\>' score-tmp.txt > score.txt
+	grep '\<nan\>' score-tmp.txt > score-failed.txt
+
 
 
 s1: clmap.png

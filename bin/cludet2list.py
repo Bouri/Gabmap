@@ -42,7 +42,12 @@ Pragma: no-cache
 
 ''')
 
-fp = open('score.txt', 'rt')
+if (getval('t') == 'fail'):
+    filename = 'score-failed.txt'
+else:
+    filename = 'score.txt'
+
+fp = open(filename, 'rt')
 for line in fp:
     a, b, c, d = line.split()
     sys.stdout.write('{} - {} - {}  |  {} \n'.format(a, b, c, re.sub('_([0-9]+)_', num2chr, d[2:-5])))

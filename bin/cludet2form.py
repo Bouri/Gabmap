@@ -57,6 +57,24 @@ def setNumber():
     time.sleep(2)
 
 def setCluster():
+    try:
+        na_rate = float(getval('narate'))
+    except: 
+        na_rate = 0
+
+    diff = ""
+    if getval('diff') == 'diff':
+        diff = '--diff '
+
+    if getval('norm') == 'zscore':
+        norm = 'z-score'
+    else:
+        norm = 'none'
+
+    fp = open('clusterdet-params', 'w')
+    fp.write('--norm={} --ignore-na={} {}\n'.format(getval('norm'), 
+                                                    na_rate, diff))
+    fp.close()
     c = getval('c')
     if not c:
         return
@@ -68,7 +86,7 @@ def setCluster():
     fp = open('currentcl', 'wt')
     fp.write('{}\n'.format(c))
     fp.close()
-    for f in 'score.txt currentlist.txt'.split():
+    for f in 'score.txt currentlist.txt distmap.png'.split():
             if os.access(f, os.F_OK):
                 os.remove(f);
     fp = open('{}/templates/Makefile-cludet2'.format(u.config.appdir), 'r')
@@ -82,11 +100,12 @@ def setCluster():
     while(os.access('QUEUED', os.F_OK)):
         time.sleep(2)
 
+
 def setItem():
     i = getval('item')
     if not i:
         return
-    for f in 'currentlist.txt selectedforms.txt'.split():
+    for f in 'currentlist.txt selectedforms.txt distmap.png'.split():
             if os.access(f, os.F_OK):
                 os.remove(f);
     fp = open('currentitem', 'wt')

@@ -267,7 +267,7 @@ void parse_cmdline(int argc, char **argv, struct options *opt)
     }
 
     opt->norm = 0;
-    if (ggo.norm_given) {
+    if (strcmp(ggo.normm_arg, "none")) {
         opt->norm = 1;
         opt->diff = 1;
     }
