@@ -2,7 +2,7 @@ VERSION=`git log --oneline|head -1|cut -d' ' -f1`
 PYTHON3=/usr/bin/python3.2
 
 INCLUDES=`pkg-config --cflags glib-2.0`
-CFLAGS=$(INCLUDES) -Wall -g 
+CFLAGS=-std=gnu99 -Wall -g $(INCLUDES)
 LIBS=`pkg-config --libs glib-2.0` -lm
 LDLIBS=$(LIBS)
 
