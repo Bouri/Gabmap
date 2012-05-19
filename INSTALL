@@ -47,3 +47,6 @@ to correct location before creation of any project.
 
 Another (relatively) non-standard python package requirement:
 colormath.
+
+The data directory and a subdirectory `.queue' under it needs to be
+created at the beginning.
