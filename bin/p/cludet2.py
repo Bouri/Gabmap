@@ -102,7 +102,7 @@ def makepage(path):
         curclnum =  0
 
     sys.stdout.write('''<table border="0">
-    <tr><td>Clusters in plot:</td><td>
+    <tr><td>Clusters of interest:</td><td>
     '''.format(u.config.appurl, project))
     for i in range(1, n + 1):
         if i == curclnum:
@@ -115,22 +115,32 @@ def makepage(path):
         </span>\n
         '''.format(i, c))
 
-    normm = 'none'
-    naval = 0
+    norm_method = 'zscore'
+    na_val = 0.8
+    opt_diff = True
     if (os.access('clusterdet-params', os.F_OK)):
         fp = open('clusterdet-params', 'r')
         line = fp.read().strip()
         fp.close()
-        normm = re.search('--norm=(\S+)', line).group(1)
-        naval = re.search('--ignore-na=([0-9.-]+)', line).group(1)
-        if(re.search('--diff', line)): 
-            diffsel='checked'
-        else: 
-            diffsel=''
+        norm_method = re.search('--norm=(\S+)', line).group(1)
+        na_val = re.search('--ignore-na=([0-9.-]+)', line).group(1)
+        opt_diff = re.search('--diff', line)
+    else: # defaults
+        fp = open('clusterdet-params', 'w')
+        if (opt_diff):
+            diffstr = ' --diff'
+        else:
+            diffstr = ''
+        fp.write('--norm={} --ignore-na={}{}'.format(norm_method, na_val, diffstr))
+
+    if(opt_diff):
+        ratiosel=''
+    else: 
+        ratiosel='checked'
 
     zselected = ""
     nselected = ""
-    if normm == 'zscore':
+    if norm_method == 'zscore':
         zselected = "selected"
     else:
         nselected = "selected"
@@ -144,14 +154,14 @@ def makepage(path):
     sys.stdout.write('''<tr><td>NA's: </td><td>
     <input type="text" size=3 name="narate" value={}> (Either an integer, or a
     ratio indicateing maximum number of NA's allowed.</td></tr>
-    '''.format(naval))
+    '''.format(na_val))
 
-    sys.stdout.write('''<tr><td>Difference? </td>
-           <td><input type="checkbox" name="diff" value="diff" {}>
-           if checked overall scores is `between - within',
-           otherwise `between / within'
+    sys.stdout.write('''<tr><td>Use ratio? </td>
+           <td><input type="checkbox" name="ratio" value="ratio" {}>
+           if checked overall scores is `between / within', otherwise
+           `between - within'.
            </td> </table>
-    '''.format(diffsel))
+    '''.format(ratiosel))
     sys.stdout.write('''
     <input type="submit" value="Select">
     </form>

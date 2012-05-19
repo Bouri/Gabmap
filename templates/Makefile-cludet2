@@ -2,7 +2,14 @@ APP={0[appdir]}
 PYTHON3={0[python3]}
 
 #NPLACES=`sed '/^'\#'/d;/^'\$$'/d' ../data/labels.txt |wc -l`
-NPLACES=`cat ../data/labels.txt |wc -l`
+NPLACES=$(shell cat ../data/labels.txt |wc -l)
+PTYPE=$(shell cat ../data/Method)
+
+DATAFILES=../data/_/*.data.ftr 
+ifeq ($(PTYPE),lev)
+	DATAFILES=../data/_/*.data
+endif
+
 
 OK:  {0[target]} ../data/OK
 
@@ -16,7 +23,8 @@ distmap.eps: ../map/map.cfg distmap.rgb
 	maprgb -r -o distmap.eps ../map/map.cfg distmap.rgb
 
 tip.html: ../map/image.html currentitem
-	$(APP)/util/makelongtip ../map/image.html ../data/_/`cat currentitem`.data tip.html
+	$(APP)/util/makelongtip ../map/image.html \
+						    ../data/_/`cat currentitem`.data tip.html
 
 distmap.rgb: selectedforms.txt currentitem
 	$(APP)/util/formstorgb currentitem selectedforms.txt distmap.rgb
@@ -34,15 +42,22 @@ currentlist.txt: clgroups.txt currentitem currentcl
 
 s2: score.txt
 
-score.txt: clgroups.txt ../data/_/*.data.ftr currentcl clusterdet-params
+score.txt: clgroups.txt $(DATAFILES) currentcl clusterdet-params
 	mkdir -p _
 	rm -f _/*.diff
-	for i in ../data/_/*.data.ftr; do \
-		leven-r -n $(NPLACES) \
+	for i in $(DATAFILES); do \
+		if [ $(PTYPE) = 'levfeat-tok' ]; then \
+			leven-r -n $(NPLACES) \
 				-l ../data/labels.txt \
 				-s ../data/features-float.txt \
-				-o _/`basename $$i .data.ftr`.diff\
+				-o _/`basename $$i .data.ftr`.diff \
 				$$i;\
+		elif [ $(PTYPE) = 'lev' ]; then \
+			leven -c -n $(NPLACES) \
+				 -l ../data/labels.txt \
+				 -o _/`basename $$i .data`.diff \
+				$$i;\
+		fi;\
 	done
 	$(APP)/util/clusterdet -c `cat currentcl` \
 		               -C clgroups.txt \
@@ -50,7 +65,6 @@ score.txt: clgroups.txt ../data/_/*.data.ftr currentcl clusterdet-params
 		               _/*.diff | sort -g > score-tmp.txt
 	grep -v '\<nan\>' score-tmp.txt > score.txt
 	grep '\<nan\>' score-tmp.txt > score-failed.txt
-
 
 
 s1: clmap.png

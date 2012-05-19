@@ -62,13 +62,12 @@ def setCluster():
     except: 
         na_rate = 0
 
-    diff = ""
-    if getval('diff') == 'diff':
-        diff = '--diff '
+    diff = '--diff '
+    if getval('ratio') == 'ratio':
+        diff = ""
 
-    if getval('norm') == 'zscore':
-        norm = 'z-score'
-    else:
+    norm = 'z-score'
+    if getval('norm') == 'none':
         norm = 'none'
 
     fp = open('clusterdet-params', 'w')
