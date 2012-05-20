@@ -150,11 +150,11 @@ int main(int argc, char **argv)
             }
 
             if (opt.norm || opt.diff) {
-                score = within_score - between_score;
+                score = between_score - within_score ;
             } else {
                 score = (within_score == 0.0 && between_score == 0.0)
                       ? 1.0
-                      : within_score / between_score;
+                      : between_score / within_score ;
             }
         }
 
