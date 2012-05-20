@@ -46,7 +46,7 @@ def setNumber():
     fp = open('nclusters', 'wt')
     fp.write('{}\n'.format(n))
     fp.close()
-    for f in 'score.txt currentcl currentlist.txt'.split():
+    for f in 'score.txt score-failed.txt currentitem currentcl distmap.eps distmap.png currentlist.txt'.split():
             if os.access(f, os.F_OK):
                 os.remove(f);
     u.queue.enqueue(path + '/cludet2', 
@@ -85,7 +85,7 @@ def setCluster():
     fp = open('currentcl', 'wt')
     fp.write('{}\n'.format(c))
     fp.close()
-    for f in 'score.txt currentlist.txt distmap.png'.split():
+    for f in 'score.txt score-failed.txt currentitem currentlist.txt distmap.eps distmap.png'.split():
             if os.access(f, os.F_OK):
                 os.remove(f);
     fp = open('{}/templates/Makefile-cludet2'.format(u.config.appdir), 'r')
@@ -104,7 +104,7 @@ def setItem():
     i = getval('item')
     if not i:
         return
-    for f in 'currentlist.txt selectedforms.txt distmap.png'.split():
+    for f in 'currentlist.txt selectedforms.txt distmap.eps distmap.png currentlist.txt'.split():
             if os.access(f, os.F_OK):
                 os.remove(f);
     fp = open('currentitem', 'wt')

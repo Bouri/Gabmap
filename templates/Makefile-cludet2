@@ -30,7 +30,7 @@ distmap.rgb: selectedforms.txt currentitem
 	$(APP)/util/formstorgb currentitem selectedforms.txt distmap.rgb
 	
 
-s3: currentlist.txt tip.html
+s3: currentlist.txt tip.html itemmap.png
 
 currentlist.txt: clgroups.txt currentitem currentcl
 	$(APP)/util/count_forms \
@@ -39,6 +39,13 @@ currentlist.txt: clgroups.txt currentitem currentcl
 				../data/_/`cat currentitem`.data \
 				| sort -rg \
 				> currentlist.txt
+
+itemmap.png: itemmap.eps
+	$(APP)/util/smappost itemmap.eps
+	$(APP)/util/eps2png
+
+itemmap.eps: ../map/map.cfg clgroups.txt currentitem currentcl
+	maplink -r -o itemmap.eps ../map/map.cfg _/`cat currentitem`.diff
 
 s2: score.txt
 
@@ -62,7 +69,7 @@ score.txt: clgroups.txt $(DATAFILES) currentcl clusterdet-params
 	$(APP)/util/clusterdet -c `cat currentcl` \
 		               -C clgroups.txt \
 					   `cat clusterdet-params` \
-		               _/*.diff | sort -g > score-tmp.txt
+		               _/*.diff | sort -rg > score-tmp.txt
 	grep -v '\<nan\>' score-tmp.txt > score.txt
 	grep '\<nan\>' score-tmp.txt > score-failed.txt
 

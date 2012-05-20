@@ -243,6 +243,10 @@ def makepage(path):
         </table>
         '''.format(_toStrHtml(curitem), r, wtn, btw))
 
+        if (os.access('itemmap.png', os.F_OK)):
+            sys.stdout.write(u.html.img(p + '-itemmap', usemap="map1", 
+                                idx=1, pseudoforce=True) + '\n')
+
         sys.stdout.write('''
             <h3 id="s4">Step 4: show the distribution of relevant forms</h3>
             <form action="{}bin/cludet2form" method="post" 
