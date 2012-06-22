@@ -206,14 +206,13 @@ def makepage(path):
     </ul>
     '''.format(u.config.appurl, path.split('-', 1)[1]))
 
-    if not method.startswith('num') and not method.startswith('dif'):
+    if method.startswith('lev'):
         sys.stdout.write('''
         <tr><td colspan="2"><hr>
         <tr valign="top">
         <td>Data mining
         <td><ul>
-        <li><a href="{0}bin/goto?p={1}-cludet">cluster determinants (categorical)</a>
-        <li><a href="{0}bin/goto?p={1}-cludet2">cluster determinants (distance based)</a>
+        <li><a href="{0}bin/goto?p={1}-cludet">cluster determinants</a>
         </ul>
         '''.format(u.config.appurl, path.split('-', 1)[1]))
 

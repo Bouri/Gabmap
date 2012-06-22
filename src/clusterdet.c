@@ -161,7 +161,7 @@ int main(int argc, char **argv)
         // output the score
 //        printf("%f\t%f\t%f\t%s\n", r, avg_d_within, avg_d_between,
         printf("%f\t%f\t%f\t%s\n", score , within_score, between_score,
-                                   opt.input_files[i]);
+                                   basename(opt.input_files[i]));
         // cleanup
         dist_matrix_free(d);
     }

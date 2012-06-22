@@ -19,7 +19,7 @@
  *
  */
 
-#define my_VERSION "0.93"
+#define my_VERSION "0.91"
 
 #define __NO_MATH_INLINES
 
@@ -52,16 +52,15 @@ typedef struct pattern_struct {
 	used,
 	rejected;
     double
-        AF,         /*  Adjusted F score           */
-	AP,         /*  Adjusted precision         */
-	AR;         /*  Adjusted recall            */
+        I,          /*  Importance                 */
+	R,          /*  Representativeness         */
+	D;          /*  Distinctiveness            */
 } PATTERN_;
 
 PATTERN_
     *patterns = NULL;
 
 double
-    beta,
     Limit;
 
 int
@@ -115,8 +114,7 @@ int
 
 int main (int argc, char *argv [])
 {
-    char
-	c;
+//    char c;
     int
 	allinn,
 	allout,
@@ -124,23 +122,20 @@ int main (int argc, char *argv [])
 	i,
 	j,
 	n,
-	TP,
-	FP,
-	oldTP,
-	oldFP,
+	o,
+	old_i,
+	old_o,
 	intarget,
 	target;
     double
-	P,
+	I,
 	R,
-	AF,
-	AP,
-	AR,
-	BP,
-	BR,
-	oldAF,
-	oldAP,
-	oldAR;
+	D,
+	RO,
+	RS,
+	oldI,
+	oldR,
+	oldD;
 
     no_mem_buffer = (char *) malloc (1024);
 
@@ -149,11 +144,10 @@ int main (int argc, char *argv [])
 
     /* process args */
 
-    if (argc != 4)
+    if (argc != 3)
 	syntax ();
 
-    beta = atof (argv [2]);
-    Limit = atof (argv [3]);
+    Limit = atof (argv [2]);
 
 
     /* read data */
@@ -161,24 +155,29 @@ int main (int argc, char *argv [])
     if (access ("../data/UTF", F_OK) == 0)
 	utf = 1;
 
-    openread ("current");
+    openread ("cluster-params");
     GetLine ();
-    sscanf (buffer, " %i %i", &i, &target);
+    sscanf (buffer, " %*s %i", &i);
+    fclose (fp);
+    openread ("currentcl");
+    GetLine ();
+    sscanf (buffer, " %i", &target);
     fclose (fp);
     openread ("clgroups.txt");
     while (GetLine ()) {
-	sscanf (buffer, " %i%n", &i, &n);
-	if (i != target)
-	    continue;
-	while (buffer [n] && isspace ((unsigned char) buffer [n]))
-	    n++;
-	memmove (buffer, buffer + n, strlen (buffer + n) + 1);
-	unquote ();
-	if (n_targets == max_targets) {
-	    max_targets += 64;
-	    targets = (char **) s_realloc (targets, max_targets * sizeof (char *));
-	}
-	targets [n_targets++] = s_strdup (buffer);
+        sscanf (buffer, " %i%n", &i, &n);
+        if (i != target)
+            continue;
+        while (buffer [n] && isspace ((unsigned char) buffer [n]))
+            n++;
+        memmove (buffer, buffer + n, strlen (buffer + n) + 1);
+        unquote ();
+        if (n_targets == max_targets) {
+            max_targets += 64;
+            targets = (char **) s_realloc(targets, 
+                                           max_targets * sizeof (char *));
+	    }
+	    targets [n_targets++] = s_strdup (buffer);
     }
     fclose (fp);
     qsort (targets, n_targets, sizeof (char **), cmpstr);
@@ -188,11 +187,12 @@ int main (int argc, char *argv [])
     else
 	openread ("currentchars-1.txt");
     while (GetLine ()) {
-	if (n_valchars == max_valchars) {
-	    max_valchars += 64;
-	    valchars = (char **) s_realloc (valchars, max_valchars * sizeof (char *));
-	}
-	valchars [n_valchars++] = s_strdup (buffer);
+        if (n_valchars == max_valchars) {
+            max_valchars += 64;
+            valchars = (char **) s_realloc(valchars, 
+                                           max_valchars * sizeof (char *));
+        }
+        valchars [n_valchars++] = s_strdup (buffer);
     }
     fclose (fp);
     qsort (valchars, n_valchars, sizeof (char **), cmpstr);
@@ -200,19 +200,19 @@ int main (int argc, char *argv [])
     intarget = 0;
     openread (argv [1]);
     while (GetLine ()) {
-	if (buffer [0] == ':') {
-	    for (j = 1; buffer [j] && isspace ((unsigned char) buffer [j]); j++)
-		;
-	    if (bsearch (buffer + j, targets, n_targets, sizeof (char **), searchcmp))
-		intarget = 1;
-	    else
-		intarget = 0;
-	} else if (buffer [0] == '-') {
-	    for (j = 1; buffer [j] && isspace ((unsigned char) buffer [j]); j++)
-		;
-	    memmove (buffer, buffer + j, strlen (buffer + j) + 1);
-	    insert (intarget);
-	}
+        if (buffer [0] == ':') {
+            for (j = 1; buffer[j] && isspace((unsigned char) buffer[j]); j++);
+            if (bsearch(buffer + j, targets, n_targets, 
+                        sizeof (char **), searchcmp))
+                intarget = 1;
+            else
+                intarget = 0;
+        } else if (buffer [0] == '-') {
+            for (j = 1; buffer [j] && isspace ((unsigned char) buffer [j]); j++)
+            ;
+            memmove (buffer, buffer + j, strlen (buffer + j) + 1);
+            insert (intarget);
+        }
     }
     fclose (fp);
 
@@ -227,40 +227,37 @@ int main (int argc, char *argv [])
     allinn = 0;
     allout = 0;
     for (i = 0; i < n_patterns; i++) {
-	allinn += patterns [i].i;
-	allout += patterns [i].o;
+	    allinn += patterns [i].i;
+	    allout += patterns [i].o;
     }
 
     /* bias: 0 or 1 */
 
     bias = 1;
 
-    /* Baseline precision */
+    /* Relative Size */
 
-    BP = ((double)(allinn + 2 * bias)) / (double)(allinn + allout + 4 * bias);
+    RS = (allinn + 2 * bias) / (allinn + allout + 4 * bias);
 
     /* score all patterens */
 
     for (j = 0; j < n_patterns; j++) {
-	if (! patterns [j].used) {
-	    patterns [j].AF = -1;
-	    continue;
-	}
-	TP = patterns [j].i;
-	FP = patterns [j].o;
-	R = ((double)(TP + bias)) / (double)(allinn + 2 * bias);
-	BR = ((double)(TP + FP + 2 * bias)) / (double)(allinn + allout + 4 * bias);
-	AR = (R - BR) / (1.0 - BR);
-	P = ((double)(TP + bias)) / (double)(TP + FP + 2 * bias);
-	AP = (P - BP) / (1.0 - BP);
-	if (AP > 0.0 && AR > 0.0)
-	    AF = (AP + beta * AR) / (1.0 + beta);
-	else
-	    AF = 0.0;
-	patterns [j].AF = AF;
-	patterns [j].AP = AP;
-	patterns [j].AR = AR;
-
+        if (! patterns [j].used) {
+            patterns [j].I = -1;
+            continue;
+        }
+        i = patterns [j].i;
+        o = patterns [j].o;
+        R = ((double)(i + bias)) / (double)(allinn + 2 * bias);
+        RO = ((double)(i + bias)) / (double)(i + o + 2 * bias);
+        D = (RO - RS) / (1 - RS);
+        if (D > 0)
+            I = (R + D) / 2.0;
+        else
+            I = 0.0;
+        patterns [j].I = I;
+        patterns [j].R = R;
+        patterns [j].D = D;
     }
 
 
@@ -268,57 +265,56 @@ int main (int argc, char *argv [])
 
     qsort (patterns, n_patterns, sizeof (PATTERN_), cmppat); /* sort by score, descending */
 
-    oldAF = oldAP = oldAR = 0.0;
-    oldTP = oldFP = 0;
+    oldI = oldR = oldD = 0.0;
+    old_i = old_o = 0;
     for (j = 0; j < n_patterns; j++) {
-	if (! patterns[j].used)
-	    continue;
-	TP = oldTP + patterns[j].i;
-	FP = oldFP + patterns[j].o;
-	R = ((double)(TP + bias)) / (double)(allinn + 2 * bias);
-	BR = ((double)(TP + FP + 2 * bias)) / (double)(allinn + allout + 4 * bias);
-	AR = (R - BR) / (1.0 - BR);
-	P = ((double)(TP + bias)) / (double)(TP + FP + 2 * bias);
-	AP = (P - BP) / (1.0 - BP);
-	if (AP > 0.0 && AR > 0.0)
-	    AF = (AP + beta * AR) / (1.0 + beta);
-	else
-	    AF = 0.0;
-	if (patterns[j].i == 0 || AF < oldAF * Limit)
-	    patterns[j].rejected = 1;
-	else {
-	    oldAF = AF;
-	    oldAP = AP;
-	    oldAR = AR;
-	    oldTP = TP;
-	    oldFP = FP;
-	    c = '[';
-	    fprintf (fp, "%.2f %.2f %.2f %s %i:%i",
-		     patterns[j].AF, patterns[j].AP, patterns[j].AR,
-		     escape((unsigned char *) patterns[j].s),
-		     patterns[j].i, patterns[j].i + patterns[j].o);
-	    qsort (patterns[j].forms, patterns[j].n_forms, sizeof (char **), cmpstr);
-	    for (n = 0; n < patterns[j].n_forms; n++) {
-		fprintf (fp, " %c %s", c, escape((unsigned char *) patterns[j].forms[n]));
-		c = '|';
-	    }
-	    fprintf (fp, " ]\n");
-	}
+        if (! patterns[j].used)
+            continue;
+        i = old_i + patterns[j].i;
+        o = old_o + patterns[j].o;
+        R = ((double)(i + bias)) / (double)(allinn + 2 * bias);
+        RO = ((double)(i + bias)) / (double)(i + o + 2 * bias);
+        D = (RO - RS) / (1 - RS);
+        if (D > 0)
+            I = (R + D) / 2.0;
+        else
+            I = 0.0;
+        if (patterns[j].i == 0 || I < oldI * Limit)
+            patterns[j].rejected = 1;
+        else {
+            oldI = I;
+            oldR = R;
+            oldD = D;
+            old_i = i;
+            old_o = o;
+//            c = '[';
+//            fprintf (fp, "%.2f %.2f %.2f %s %i:%i",
+//                 patterns[j].I, patterns[j].R, patterns[j].D,
+//                 escape((unsigned char *) patterns[j].s),
+//                 patterns[j].i, patterns[j].i + patterns[j].o);
+            qsort (patterns[j].forms, patterns[j].n_forms, sizeof (char **), cmpstr);
+//            for (n = 0; n < patterns[j].n_forms; n++) {
+//                fprintf (fp, " %c %s", c, escape((unsigned char *) patterns[j].forms[n]));
+//                c = '|';
+//            }
+//            fprintf (fp, " ]\n");
+        }
 
     }
 
+#if 0
     /* print the rejected patterns */
 
     qsort (patterns, n_patterns, sizeof (PATTERN_), cmppatstr); /* sort by pattern */
 
     for (i = 0; i < n_patterns; i++)
-	if (patterns[i].rejected)
-	    fprintf (fp, "[%s %i:%i]\n", escape((unsigned char *) patterns[i].s), patterns[i].i, patterns[i].i + patterns[i].o);
-
+	    if (patterns[i].rejected)
+	        fprintf (fp, "[%s %i:%i]\n", escape((unsigned char *) patterns[i].s), patterns[i].i, patterns[i].i + patterns[i].o);
+#endif
 
     /* print the total score */
 
-    fprintf (fp, "\n%.2f %.2f %.2f %i:%i\n", oldAF, oldAP, oldAR, oldTP, oldTP + oldFP);
+    fprintf (fp, "%.2f\t%.2f\t%.2f\n", oldI, oldR, oldD);
 
 
     return 0;
@@ -405,9 +401,9 @@ void syntax ()
 	"\n"
 	"Version " my_VERSION "\n"
 	"\n"
-	"Usage: %s datafile beta limit\n"
+	"Usage: %s datafile limit\n"
 	"\n"
-	"Example: %s ../data/_/apple.data 1.5 1.02\n"
+	"Example: %s ../data/_/apple.data 1.02\n"
 	"\n",
 	programname,
 	programname
@@ -477,8 +473,8 @@ int cmppat (void const *p1, void const *p2)
     double
 	f1,
 	f2;
-    f1 = ((PATTERN_ *)p1)->AF;
-    f2 = ((PATTERN_ *)p2)->AF;
+    f1 = ((PATTERN_ *)p1)->I;
+    f2 = ((PATTERN_ *)p2)->I;
     if (f1 > f2)
 	return -1;
     if (f1 < f2)
@@ -706,11 +702,11 @@ char *escape (unsigned char *s)
 
 	switch (n){
 	    case 1: c = (unsigned char) s [i]; break;
-	    case 2: c = bytes2 (s + i); break;
-	    case 3: c = bytes3 (s + i); break;
-	    case 4: c = bytes4 (s + i); break;
-	    case 5: c = bytes5 (s + i); break;
-	    case 6: c = bytes6 (s + i); break;
+  	    case 2: c = bytes2 (s + i); break;
+  	    case 3: c = bytes3 (s + i); break;
+  	    case 4: c = bytes4 (s + i); break;
+  	    case 5: c = bytes5 (s + i); break;
+  	    case 6: c = bytes6 (s + i); break;
 	    default: c = 32;
 	}
 

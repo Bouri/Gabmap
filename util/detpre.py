@@ -33,6 +33,40 @@ import u.setChar
 
 #| globals
 
+defaults = '''
+02B0  MODIFIER LETTER SMALL H
+02B1  MODIFIER LETTER SMALL H WITH HOOK
+02B2  MODIFIER LETTER SMALL J
+02B3  MODIFIER LETTER SMALL R
+02B4  MODIFIER LETTER SMALL TURNED R
+02B5  MODIFIER LETTER SMALL TURNED R WITH HOOK
+02B6  MODIFIER LETTER SMALL CAPITAL INVERTED R
+02B7  MODIFIER LETTER SMALL W
+02B8  MODIFIER LETTER SMALL Y
+02C0  MODIFIER LETTER GLOTTAL STOP
+02C1  MODIFIER LETTER REVERSED GLOTTAL STOP
+02E0  MODIFIER LETTER SMALL GAMMA
+02E1  MODIFIER LETTER SMALL L
+02E2  MODIFIER LETTER SMALL S
+02E3  MODIFIER LETTER SMALL X
+02E4  MODIFIER LETTER SMALL REVERSED GLOTTAL STOP
+0363  COMBINING LATIN SMALL LETTER A
+0364  COMBINING LATIN SMALL LETTER E
+0365  COMBINING LATIN SMALL LETTER I
+0366  COMBINING LATIN SMALL LETTER O
+0367  COMBINING LATIN SMALL LETTER U
+0368  COMBINING LATIN SMALL LETTER C
+0369  COMBINING LATIN SMALL LETTER D
+036A  COMBINING LATIN SMALL LETTER H
+036B  COMBINING LATIN SMALL LETTER M
+036C  COMBINING LATIN SMALL LETTER R
+036D  COMBINING LATIN SMALL LETTER T
+036E  COMBINING LATIN SMALL LETTER V
+036F  COMBINING LATIN SMALL LETTER X
+207F  SUPERSCRIPT LATIN SMALL LETTER N
+'''.strip().split('\n')
+
+
 #| functions
 
 #| main
@@ -40,6 +74,31 @@ import u.setChar
 if os.access('../data/UTF', os.F_OK):
 
     charset = set()
+
+    if not os.access('accents.txt' ,os.F_OK):
+        fpin = open('../data/charcount.txt', 'rt')
+        fpout = open('accents.txt', 'wt')
+        for line in fpin:
+            i = int(line.split()[0])
+            c = u.setChar.ci(i)
+            if c != 'V' and c != 'S' and c != 'C':
+                fpout.write('{}\n'.format(i))
+        fpout.close()
+        fpin.close()
+
+    accents = {}
+    fp = open('accents.txt', 'rt')
+    for line in fp:
+        accents[int(line)] = False
+    fp.close()
+
+    if not os.access('accentscurrent.txt' ,os.F_OK):
+        fp = open('accentscurrent.txt', 'wt')
+        for j in defaults:
+            i = int(j.split()[0], 16)
+            if i in accents:
+                fp.write('{}\n'.format(i))
+        fp.close()
 
     fp = open('accentscurrent.txt', 'rt')
     for line in fp:
@@ -64,4 +123,3 @@ else:
     for i in ' 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz':
         fp.write(i + '\n')
     fp.close()
-

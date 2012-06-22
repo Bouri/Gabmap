@@ -37,31 +37,72 @@ def _num2chr(m):
 def getval(field):
     return u.myCgi.data.get(field, b'').decode(codepage).strip()
 
-def setNumber():
+def setClParams():
+    method = getval('mthd')
+    groups = int(getval('n'))
+
     n = int(getval('n'))
     assert n >= 2 and n <= 12
     fp = open('{}/templates/Makefile-cludet'.format(u.config.appdir), 'r')
     make = fp.read()
     fp.close()
-    u.queue.enqueue(path + '/cludet', make.format({'appdir': u.config.appdir, 'python3': u.config.python3, 'n': n}))
-    for i in 'score.txt currentlist.txt currentselect.txt distmap.eps currentregex.txt'.split():
-        if os.access(i, os.F_OK):
-            os.remove(i)
+    fp = open('cluster-params', 'wt')
+    fp.write('{} {}\n'.format(method, groups))
+    fp.close()
+    for f in 'score.txt score-failed.txt currentitem currentcl distmap.eps distmap.png currentlist.txt'.split():
+            if os.access(f, os.F_OK):
+                os.remove(f);
+    u.queue.enqueue(path + '/cludet', 
+                    make.format({'appdir': u.config.appdir, 
+                                 'python3': u.config.python3, 
+                                 'target': 's1'}))
     u.queue.run()
     time.sleep(2)
 
-def setCluster():
+def setClDetParams():
+
+    if getval('detmethod') == 'importance':
+        cludet_method = "importance"
+    else:
+        cludet_method = "shibboleth"
+
+    fp = open('clusterdet-method', 'w')
+    fp.write('{}\n'.format(cludet_method))
+    fp.close()
+
+    try:
+        na_rate = float(getval('narate'))
+    except: 
+        na_rate = 0
+
+
+    diff = '--diff '
+    if getval('ratio') == 'ratio':
+        diff = ""
+
+    norm = 'zscore'
+    if getval('norm') == 'none':
+        norm = 'none'
+
+    fp = open('clusterdet-params', 'w')
+    if cludet_method == 'shibboleth':
+        fp.write('--norm={} --ignore-na={} {}\n'.format(norm, na_rate, diff))
+    else:
+        fp.write('\n') # TODO
+    fp.close()
     c = getval('c')
     if not c:
         return
     c = int(c)
-    fp = open('current', 'rt')
-    n = int(fp.read().split()[0])
+    fp = open('cluster-params', 'rt')
+    clmethod, groups = fp.read().split()
     fp.close()
-    assert c >= 1 and c <= n
-    fp = open('current', 'wt')
-    fp.write('{} {}\n'.format(n, c))
+    assert c >= 1 and c <= int(groups)
+
+    fp = open('currentcl', 'wt')
+    fp.write('{}\n'.format(c))
     fp.close()
+
     if os.access('accents.txt', os.F_OK):
         fpin = open('accents.txt', 'rt')
         fpout = open('accentscurrent.txt', 'wt')
@@ -71,227 +112,69 @@ def setCluster():
         fpout.close()
         fpin.close()
 
-    mm = getval('method')
-    fp = open('version', 'wt')
-    fp.write(mm + '\n')
+    for f in 'score.txt score-failed.txt currentitem currentlist.txt distmap.eps distmap.png'.split():
+            if os.access(f, os.F_OK):
+                os.remove(f);
+    fp = open('{}/templates/Makefile-cludet'.format(u.config.appdir), 'r')
+    make = fp.read()
     fp.close()
-
-    makes = 'OK: ../diff/OK\n'
-    makes += '\tdetpre.py\n'
-    if mm == 'fast':
-        params = '{} {}'.format(FastBeta, Limit)
-        makes += '\tfor i in ../data/_/*.data; do determinants1 $$i {} > _/`basename $$i .data`.utxt; done\n'.format(params)
-    else:
-        params = '{} {} {}'.format(SlowBeta, Limit, Sep)
-        makes += '\tfor i in ../data/_/*.data; do determinants2 $$i {} > _/`basename $$i .data`.utxt; done\n'.format(params)
-    makes += '\t( for i in _/*.utxt; do echo `tail -n 1 $$i` $$i; done ) | cdsort > score.txt\n'
-    makes += '\ttouch OK\n'
-    u.queue.enqueue(path + '/cludet', makes)
+    u.queue.enqueue(path + '/cludet', 
+                    make.format({'appdir': u.config.appdir, 
+                                 'python3': u.config.python3, 
+                                 'target': 's2'}))
     u.queue.run()
-    time.sleep(2)
-    fp = open('currentparms', 'wt')
-    fp.write(params + '\n')
-    fp.close()
-    for i in 'currentlist.txt currentselect.txt distmap.eps distmap.ex currentregex.txt'.split():
-        if os.access(i, os.F_OK):
-            os.remove(i)
+    while(os.access('QUEUED', os.F_OK)):
+        time.sleep(2)
+
 
 def setItem():
-    item = getval('item')
-    fp = open('current', 'rt')
-    n, c = fp.read().split()[:2]
+    i = getval('item')
+    if not i:
+        return
+    for f in 'currentlist.txt selectedforms.txt distmap.eps distmap.png currentlist.txt'.split():
+            if os.access(f, os.F_OK):
+                os.remove(f);
+    fp = open('currentitem', 'wt')
+    fp.write('{}\n'.format(i))
     fp.close()
-    fp = open('current', 'wt')
-    fp.write('{} {} {}\n'.format(n, c, item))
+    fp = open('{}/templates/Makefile-cludet'.format(u.config.appdir), 'r')
+    make = fp.read()
     fp.close()
-    for i in 'currentlist.txt currentselect.txt distmap.eps currentregex.txt'.split():
-        if os.access(i, os.F_OK):
-            os.remove(i)
+    u.queue.enqueue(path + '/cludet', 
+                    make.format({'appdir': u.config.appdir, 
+                                 'python3': u.config.python3, 
+                                 'target': 's3'}))
+    u.queue.run()
+    while(os.access('QUEUED', os.F_OK)):
+        time.sleep(2)
 
-def setRegex():
-    global codepage
-    codepage = u.hebci.cp(u.myCgi.data)
-    regex = getval('regex')
-    if not regex:
-        u.html.exitMessage('Error', 'Missing regular expression')
-    try:
-        RE = re.compile(regex)
-    except:
-        u.html.exitMessage('Error', 'Invalid regular expression: ' + u.html.escape(str(sys.exc_info()[1])))
-    fp = open('currentregex.txt', 'wt', encoding='utf-8')
-    fp.write(regex + '\n')
-    fp.close()
-    for i in 'redistmap.eps redistmap.eps'.split():
-        if os.access(i, os.F_OK):
-            os.remove(i)
-
-    fp = open('current', 'rt')
-    target, datafile = fp.read().split()[1:]
+def setForms():
+    fin = getval('formsin')
+    fout = getval('formsout')
+    fp = open('/tmp/cludet.dbg', "w")
+    fp.write('{}\n'.format(fin))
+    fp.write('{}\n'.format(fout))
     fp.close()
 
-    partition = set()
+    if not (fin or fout):
+        return
 
-    fp = open('clgroups.txt', 'rt', encoding='iso-8859-1')
-    for line in fp:
-        a, b = line.split(None, 1)
-        if a == target:
-            partition.add(_unquote(b))
+    fp = open('selectedforms.txt', 'wt')
+    if (fin):
+        fp.write('{}\n'.format(fin))
+    if (fout):
+        fp.write('{}\n'.format(fout))
     fp.close()
-
-    matches = {}
-    matchesin = {}
-
-    mtd = open('version', 'rt').read().strip()
-    if mtd == 'fast':
-
-        fp = open('currentparms', 'rt')
-        params = fp.read().split()
-        fp.close()
-        beta = float(params[0])
-
-        TP = 0
-        FP = 0
-        FN = 0
-        TN = 0
-
-        fp = open('../data/_/' + datafile + '.data', 'rb')
-        encoding = 'iso-8859-1'
-        for line in fp:
-            if line.startswith(b'%utf8'):
-                encoding = 'utf-8'
-            elif line[:1] == b':':
-                lbl = line.decode('iso-8859-1')[1:].strip()
-            elif line[:1] == b'-':
-                item = line.decode(encoding)[1:].strip()
-                if RE.search(item):
-                    if not item in matches:
-                        matches[item] = 0
-                        matchesin[item] = 0
-                    matches[item] += 1
-                    if lbl in partition:
-                        matchesin[item] += 1
-                        TP += 1
-                    else:
-                        FP += 1
-                else:
-                    if lbl in partition:
-                        FN += 1
-                    else:
-                        TN += 1
-        fp.close()
-
-        fp = open('reresults.txt', 'wt')
-
-        if TP + FP == 0:
-            fp.write('0.00 0.00 0.00\n')
-        else:
-            p = (TP + 1) / (TP + FP + 2)
-            r = (TP + 1) / (TP + FN + 2)
-            bp = (TP + FN + 2) / (TP + FN + FP + TN + 4)
-            br = (TP + FP + 2) / (TP + FN + FP + TN + 4)
-            ap = (p - bp) / (1 - bp)
-            ar = (r - br) / (1 - br)
-            if ap < 0 or ar < 0:
-                af = 0
-            else:
-                af = (ap + beta * ar) / (1 + beta)
-            fp.write('{:.2f} {:.2f} {:.2f}\n'.format(af, ap, ar))
-
-        fp.close()
-
-    else: # mtd == 'slow'
-        import math, pickle
-
-        fp = open('currentparms', 'rt')
-        params = fp.read().split()
-        fp.close()
-
-        beta = float(params[0])
-        Sep = float(params[2])
-
-        fp = open('dst.pickle', 'rb')
-        labels, idx, dst = pickle.load(fp)
-        fp.close()
-
-        nPlaces = len(labels)
-        nPlacesIn = len(partition)
-
-        RelSize = nPlacesIn / nPlaces
-
-        Counts = []
-        for i in range(nPlaces):
-            Counts.append([0, 0])
-
-        fp = open('../data/_/' + datafile + '.data', 'rb')
-        encoding = 'iso-8859-1'
-        for line in fp:
-            if line.startswith(b'%utf8'):
-                encoding = 'utf-8'
-            elif line[:1] == b':':
-                lbl = idx[line.decode('iso-8859-1')[1:].strip()]
-            elif line[:1] == b'-':
-                Counts[lbl][1] += 1
-                item = line.decode(encoding)[1:].strip()
-                if RE.search(item):
-                    Counts[lbl][0] += 1
-                    if not item in matches:
-                        matches[item] = 0
-                        matchesin[item] = 0
-                    matches[item] += 1
-                    if labels[lbl] in partition:
-                        matchesin[item] += 1
-        fp.close()
-
-        missing = [False] * nPlaces
-        for i in range(nPlaces):
-            if Counts[i][1] == 0:
-                missing[i] = True
-
-        for i in range(nPlaces):
-            if missing[i]:
-                sum0 = 0
-                sum1 = 0
-                for j in range(nPlaces):
-                    if not missing[j]:
-                        d = math.pow(dst[i][j], Sep)
-                        sum0 += Counts[j][0] / d
-                        sum1 += Counts[j][1] / d
-                Counts[i][0] = sum0
-                Counts[i][1] = sum1
-
-        TP = FP = FN = TN = 0.0
-        for i in range(nPlaces):
-            lbl = labels[i]
-            if lbl in partition:
-                tp = Counts[i][0] / Counts[i][1]
-                TP += tp
-                FN += 1 - tp
-            else:
-                fp = Counts[i][0] / Counts[i][1]
-                FP += fp
-                TN += 1 - fp
-
-        p = TP / (TP + FP)
-        r = TP / (TP + FN)
-        bp = (TP + FN) / (TP + FN + FP + TN)
-        br = (TP + FP) / (TP + FN + FP + TN)
-        ap = (p - bp) / (1 - bp)
-        ar = (r - br) / (1 - br)
-        if ap < 0 or ar < 0:
-            af = 0
-        else:
-            af = (ap + beta * ar) / (1 + beta)
-
-        fp = open('reresults.txt', 'wt')
-        fp.write('{:.2f} {:.2f} {:.2f}\n'.format(af, ap, ar))
-        fp.close()
-
-
-    fp = open('rematches.txt', 'wt', encoding='utf-8')
-    for i in sorted(matches):
-        fp.write('{}:{}\t{}\n'.format(matchesin[i], matches[i], i))
+    fp = open('{}/templates/Makefile-cludet'.format(u.config.appdir), 'r')
+    make = fp.read()
     fp.close()
-
+    u.queue.enqueue(path + '/cludet', 
+                    make.format({'appdir': u.config.appdir, 
+                                 'python3': u.config.python3, 
+                                 'target': 's4'}))
+    u.queue.run()
+    while(os.access('QUEUED', os.F_OK)):
+        time.sleep(2)
 
 #| main
 
@@ -309,18 +192,18 @@ u.path.chdir(username + '-' + path + '-cludet')
 a = getval('action')
 
 if not os.access('QUEUED', os.F_OK):
-
-    if a == 'number':
-        setNumber()
+    if a == 'cluster':
+        setClParams()
         target = '#s1'
-    elif a == 'cluster':
-        setCluster()
+    elif a == 'determinant':
+        setClDetParams()
         target = '#s2'
     elif a == 'item':
         setItem()
         target = '#s3'
-    elif a == 'regex':
-        setRegex()
+    elif a == 'formdist':
+        setForms()
         target = '#s4'
+
 
 sys.stdout.write('Location: goto?p={}-cludet{}\n\n'.format(path, target))

@@ -11,7 +11,7 @@ __date__ = "2010/05/13"
 
 import cgitb; cgitb.enable(format="text")
 
-import cgi, re, sys
+import cgi, re, sys, os
 
 import u.html, u.path
 from u.login import username
@@ -42,9 +42,33 @@ Pragma: no-cache
 
 ''')
 
-fp = open('score.txt', 'rt')
+if (getval('t') == 'fail'):
+    filename = 'score-failed.txt'
+else:
+    filename = 'score.txt'
+
+if os.access('clusterdet-method', os.F_OK):
+    fp = open('clusterdet-method', 'r')
+    det_method = fp.read().strip()
+    fp.close()
+else:
+    det_method = "shibboleth"
+
+if det_method == 'importance':
+    score_name = 'Importance'
+    wtn_name = 'Representativeness'
+    btw_name = 'Distinctiveness'
+else:
+    score_name = 'Score'
+    wtn_name = 'Within score'
+    btw_name = 'Between score'
+
+sys.stdout.write('{}\t{}\t{}\tItem\n'.format(score_name, wtn_name, btw_name))
+
+fp = open(filename, 'rt')
 for line in fp:
-    a, b, c, d, e = line.split()
-    sys.stdout.write('{} - {} - {}  |  {}  {}\n'.format(a, b, c, re.sub('_([0-9]+)_', num2chr, e[2:-5]), d))
+    a, b, c, d = line.split()
+    sys.stdout.write('{}\t{}\t{}\t{}\n'.format(a, b, c, 
+                                            re.sub('_([0-9]+)_', num2chr, d)))
 fp.close()
 

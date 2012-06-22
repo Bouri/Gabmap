@@ -932,6 +932,9 @@ for i in 'cccmaps clusters clumaps diff mdsplots mdsmaps prob plot'.split():
 if not method.startswith('num') and not method.startswith('dif'):
     for i in 'cludet cludet/_'.split():
         os.mkdir(i)
+    os.chdir('cludet')
+    os.system('$PYTHON3 $APPDIR/util/detpre.py')
+    os.chdir('..')
     for i in 'cludet2 cludet2/_'.split():
         os.mkdir(i)
     fp = open('cludet2/nclusters', 'w', encoding='utf-8')
@@ -1091,7 +1094,7 @@ if not method.startswith('num') and not method.startswith('dif'):
     fp.close()
     u.queue.enqueue(path + '/cludet', make.format({'appdir': u.config.appdir,
                                                    'python3': u.config.python3,
-                                                   'n': 6}))
+                                                   'target': 's1'}))
 
     fp = open('{}/templates/Makefile-cludet2'.format(u.config.appdir), 'r')
     make = fp.read()

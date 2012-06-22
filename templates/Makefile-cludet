@@ -1,13 +1,138 @@
+APP={0[appdir]}
+PYTHON3={0[python3]}
 
-OK: ../diff/OK cluster.wm
-	rm -f OK
-	clgroup -n {0[n]} -i -o clgroups.txt cluster.wm
-	grep -v ^markers: ../map/map.cfg > map.cfg
-	mapclust -o clmap.eps -u {0[appdir]}templates/palette12.txt map.cfg cluster.wm {0[n]}
-	{0[python3]} {0[appdir]}util/smappost clmap.eps
-	echo {0[n]} > current
-	eps2png
+#NPLACES=`sed '/^'\#'/d;/^'\$$'/d' ../data/labels.txt |wc -l`
+NPLACES=$(shell cat ../data/labels.txt |wc -l)
+PTYPE=$(shell cat ../data/Method)
+CLDETMETHOD=$(shell cat clusterdet-method)
+
+DATAFILES=../data/_/*.data.ftr 
+ifeq ($(PTYPE),lev)
+	DATAFILES=../data/_/*.data
+endif
+ifeq ($(CLDETMETHOD),importance)
+	DATAFILES=../data/_/*.data
+endif
+
+
+OK:  {0[target]} ../data/OK
 	touch OK
 
-cluster.wm: ../diff/OK
-	cluster -o cluster.wm -wm ../diff/diff.txt
+s4: distmap.png selectedforms.txt
+
+distmap.png: distmap.eps
+	rm -f OK
+	$(APP)/util/smappost distmap.eps
+	$(APP)/util/eps2png
+
+distmap.eps: ../map/map.cfg distmap.rgb itemmap.cfg
+	rm -f OK
+	maprgb -r -o distmap.eps itemmap.cfg distmap.rgb
+
+tip.html: ../map/image.html currentitem
+	rm -f OK
+	$(APP)/util/makelongtip ../map/image.html \
+						    ../data/_/`cat currentitem`.data tip.html
+
+distmap.rgb: selectedforms.txt currentitem
+	rm -f OK
+	$(APP)/util/formstorgb currentitem selectedforms.txt distmap.rgb
+	
+
+s3: currentlist.txt tip.html itemmap.png
+
+currentlist.txt: clgroups.txt currentitem currentcl
+	rm -f OK
+	$(APP)/util/count_forms \
+				clgroups.txt \
+				`cat currentcl` \
+				../data/_/`cat currentitem`.data \
+				| sort -rg \
+				> currentlist.txt
+
+itemmap.png: itemmap.eps
+	rm -f OK
+	$(APP)/util/smappost itemmap.eps
+	$(APP)/util/eps2png
+
+itemmap.eps: itemmap.cfg clgroups.txt currentitem currentcl
+	rm -f OK
+	maplink -r -o itemmap.eps itemmap.cfg _/`cat currentitem`.diff
+
+itemmap.cfg: ../map/map.cfg map.ex
+	rm -f OK
+	sed "s,^othermarkers: .*,othermarkers: `pwd`/map.ex," $< > $@
+
+map.ex: currentcl clgroups.txt
+	grep "^\s*`cat currentcl`" clgroups.txt \
+		| iconv -f utf-8 -t ISO8859-9 \
+		> map.ex
+
+s2: score.txt
+
+score.txt: clgroups.txt $(DATAFILES) currentcl clusterdet-method clusterdet-params
+	rm -f OK
+	mkdir -p _
+	rm -f score.txt score-failed.txt
+	if grep '^importance' clusterdet-method >/dev/null 2>&1; then \
+		(for i in $(DATAFILES); do \
+			echo -n "`determinants1 $$i 1.02`\t"; \
+			basename $$i | cut -d. -f1; \
+		 done) | sort -rn > score.txt; \
+	else \
+		rm -f _/*.diff; \
+		for i in $(DATAFILES); do \
+			if [ $(PTYPE) = 'levfeat-tok' ]; then \
+				leven-r -n $(NPLACES) \
+					-l ../data/labels.txt \
+					-s ../data/features-float.txt \
+					-o _/`basename $$i .data.ftr`.diff \
+					$$i;\
+			elif [ $(PTYPE) = 'lev' ]; then \
+				leven -c -n $(NPLACES) \
+					 -l ../data/labels.txt \
+					 -o _/`basename $$i .data`.diff \
+					$$i;\
+			fi;\
+		done; \
+		$(APP)/util/clusterdet -c `cat currentcl` \
+						   -C clgroups.txt \
+						   `cat clusterdet-params` \
+						   _/*.diff \
+			| sed 's/\.diff$$//' | sort -rg > score-tmp.txt; \
+		grep -v '\<nan\>' score-tmp.txt > score.txt; \
+		grep '\<nan\>' score-tmp.txt > score-failed.txt; \
+		rm -f score-tmp.txt; \
+	fi
+
+clgroups.txt: cluster.txt cluster-params
+	rm -f OK
+	clgroup -n `cut -d' ' -f2 cluster-params` -i -o clgroups.txt cluster.txt
+
+
+s1: clmap.png
+
+clmap.png: clmap.eps
+	rm -f OK
+	$(PYTHON3) $(APP)/util/smappost clmap.eps
+	$(APP)/util/eps2png
+
+clmap.eps: map.cfg cluster.txt cluster-params
+	rm -f OK
+	mapclust -o clmap.eps \
+		-u $(APP)/templates/palette12.txt \
+		map.cfg cluster.txt `cut -d' ' -f2 cluster-params`
+
+map.cfg: ../map/map.cfg
+	rm -f OK
+	grep -v ^markers: ../map/map.cfg > map.cfg
+
+cluster.txt: ../diff/diff.txt cluster-params
+	rm -f OK
+	cluster -o cluster.txt -wm ../diff/diff.txt
+
+cluster-params:
+	rm -f OK
+	(test -f ../cluster/current.txt \
+		&& cut -d' ' -f1-2 ../cluster/current.txt \
+		|| echo "wm 6" )> $@
