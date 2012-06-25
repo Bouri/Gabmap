@@ -312,8 +312,8 @@ function checkdeterminantoptions() {
                 btw_name = 'Distinctiveness'
             else:
                 score_name = 'Score'
-                wtn_name = 'Within score'
-                btw_name = 'Between score'
+                wtn_name = 'Within difference'
+                btw_name = 'Between difference'
 
             fp = open('score.txt', 'rt')
             for line in fp:
@@ -367,13 +367,19 @@ function checkdeterminantoptions() {
             sys.stdout.write('''
             Current item: {}
             <table cellspacing="0" cellpadding="0" border="0">
-            <tr><td>Score:&nbsp;  <td>{}
-            <tr><td>&mdash; Within score:&nbsp;  <td>{}
-            <tr><td>&mdash; Between score:&nbsp; <td>{}
+            <tr><td>{}:&nbsp;  <td>{}
+            <tr><td>&mdash; {}:&nbsp;  <td>{}
+            <tr><td>&mdash; {}:&nbsp; <td>{}
             </table>
-            '''.format(_toStrHtml(curitem), r, wtn, btw))
+            '''.format(_toStrHtml(curitem), score_name, r, 
+                                            wtn_name, wtn, 
+                                            btw_name, btw))
 
-            if (det_method == 'shibboleth' and os.access('itemmap.png', os.F_OK)):
+            if (det_method == 'shibboleth' 
+                and os.access('itemmap.png', os.F_OK)):
+                sys.stdout.write('''<br>Difference map for <i>{}</i>
+                    (note: darker link color means higher difference)<br>
+                '''.format(curitem))
                 sys.stdout.write(u.html.img(p + '-itemmap', usemap="map1", 
                                     idx=1, pseudoforce=True) + '\n')
 
