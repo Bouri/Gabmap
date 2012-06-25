@@ -2,17 +2,21 @@
 
 *Doing dialect analysis on the web*
 
+Gabmap is a web-based application for common tasks in
+[dialectometry](http://en.wikipedia.org/wiki/Dialectometry).
+
 - - -
 
-The main website voor Gabmap is [gabmap.nl](http://www.gabmap.nl/),
-however, the web application running on that site is outdated, and no
-longer supported by the author.
-
-The current version of the web application is running on [the author's
-site](http://www.let.rug.nl/~kleiweg/L04/webapp/).
+The main website voor Gabmap is [gabmap.nl](http://www.gabmap.nl/).
+The site allows anyone to create a user and use this application.
 
 To run Gabmap on your own web server, you can download it from Github,
-but at the moment, there is no installation guide.
+but at the moment, there is no proper installation guide.
+
+Gabmap is developed in [University of Groningen](http://www.rug.nl),
+department of (Information
+Science)[http://www.rug.nl/let/onderwijs/afdelingen/informatiekunde/index]
+(See file CREDITS for a list of people contributed to Gabmap).
 
 - - -
-Author: [Peter Kleiweg](http://www.let.rug.nl/~kleiweg/)
+Current author/maintainer: [Cagri Coltekin](http://www.let.rug.nl/~coltekin/) 
