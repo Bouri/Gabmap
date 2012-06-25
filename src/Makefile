@@ -1,9 +1,10 @@
-VERSION=`git log --oneline|head -1|cut -d' ' -f1`
-PYTHON3=/usr/bin/python3.2
+VERSION=$(shell git log --oneline|head -1|cut -d' ' -f1)
+PYTHON3=$(shell which python3)
+PYTHON2=$(shell which python2.6)
 
-INCLUDES=`pkg-config --cflags glib-2.0`
+INCLUDES=$(shell pkg-config --cflags glib-2.0)
 CFLAGS=-std=gnu99 -Wall -g $(INCLUDES)
-LIBS=`pkg-config --libs glib-2.0` -lm
+LIBS=$(shell pkg-config --libs glib-2.0) -lm
 LDLIBS=$(LIBS)
 
 EXEC=clusterdet count_forms formstorgb makelongtip
