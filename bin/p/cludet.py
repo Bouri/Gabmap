@@ -170,7 +170,7 @@ function checkdeterminantoptions() {
             det_method = "shibboleth"
 
         sys.stdout.write('''<br>Determinant: 
-                <select name="detmethod" onchange="checkdeterminantoptions()">\n
+                <select name="detmethod" onchange="checkdeterminantoptions()">
             ''')
         selected = ""
         for i in sorted(det_methods):
@@ -180,8 +180,7 @@ function checkdeterminantoptions() {
                 selected = ""
             sys.stdout.write('''<option{} value="{}">{}</option>
                              '''.format(selected, i, det_methods[i]))
-        sys.stdout.write('</select>\n')
-
+        sys.stdout.write('</select>{}\n'.format(u.html.help('cludetmethod')))
         norm_method = 'zscore'
         na_val = 0.8
         opt_diff = True
@@ -219,7 +218,7 @@ function checkdeterminantoptions() {
         '''.format(nselected, zselected))
         sys.stdout.write('''<br>NA's: 
         <input type="text" size=3 name="narate" value={}> (Either an integer, or a
-        ratio indicateing maximum number of NA's allowed.
+        ratio indicateing maximum number of NA's allowed).
         '''.format(na_val))
 
         sys.stdout.write('''<br>Use ratio? 

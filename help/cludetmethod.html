@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+	"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <title>Cluster determinants: methods</title>
+</head>
+<body>
+
+<p>
+Currently, Gabmap implements two cluster determinant methods. Cluster
+determinants try to find items that are characteristic of a given
+cluster (set of sites).
+<ul>
+<li> The first (recommended) cluster determinant, labeled 
+    "<i>Distance based</i>" implements the method described in
+<blockquote>
+Jelena Prokić, Çağrı Çöltekin &amp; John Nerbonne (2012).
+<a href="http://aclweb.org/anthology-new/W/W12/W12-0211.pdf">Detecting
+Shibboleths
+  </a>. In: M. Butt &amp; J. Prokić (eds.)
+  <i>Visualization of Language Patters and Uncovering Language History
+  from Multilingual Resources.</i> Workshop at the 13th Conference of
+  the European Chapter of the Association for computational Linguistics.
+   Avignon, France. 2012. pp.72-80.
+</blockquote>
+the method is based on finding items that are uniform within the
+cluster of interest, while different from the rest of the sites. The
+two components <i>within difference</i> and <i>between difference</i>
+characterize the average difference within the sites in the cluster, and the
+average difference between the sites in the cluster and the rest of
+the sites in the data set with respect to given item. Items whose
+within difference is low, and between difference is high are regarded
+as characteristic items, "shibboleths". The aggregate score provided
+is either difference (default) or ratio of these two quantities. To
+make the difference meaningful across different data sets, by default
+the difference scores are normalized.
+<li> The second method labeled "<i>Categorical</i>" is loosely based on 
+<blockquote>
+Martijn Wieling and John Nerbonne (2011). <a
+href="http://www.let.rug.nl/~nerbonne/papers/Wieling-Nerbonne-2009-CSL.pdf">
+Bipartite spectral graph partitioning for clustering dialect varieties and
+detecting their linguistic features</a>.  <i>Computer Speech and
+Language</i> 25, 2011. 700-715.
+</blockquote>
+</ul>
+</body>
+</html>
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+coding:utf-8
+sgml-declaration:"HTML4.01/HTML4.decl"
+sgml-omittag:t
+sgml-shorttag:nil
+End:
+-->
