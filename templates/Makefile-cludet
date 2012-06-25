@@ -76,7 +76,7 @@ score.txt: clgroups.txt $(DATAFILES) currentcl clusterdet-method clusterdet-para
 	rm -f score.txt score-failed.txt
 	if grep '^importance' clusterdet-method >/dev/null 2>&1; then \
 		(for i in $(DATAFILES); do \
-			echo -n "`determinants1 $$i 1.02`\t"; \
+			/bin/echo -en "`determinants1 $$i 1.02`\t"; \
 			basename $$i | cut -d. -f1; \
 		 done) | sort -rn > score.txt; \
 	else \
