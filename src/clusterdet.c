@@ -174,9 +174,9 @@ int main(int argc, char **argv)
 
 /* read_clgroup(): read a cluster list prepared by RuG/L04 clgroup
  *                 into a hash table, and store the maximum cluster 
- *                 number in clmax. clcount is an array of integirs 
- *                 with count of each cluster number. clcount[0] is 
- *                 the total number of clusters.
+ *                 number in clmax. clcount is an array of integers 
+ *                 with count of sites within each cluster number. 
+ *                 clcount[0] is the total number of clusters.
  */
 GHashTable *read_cllist(const char *fname, int **clcount, int *clmax)
 {

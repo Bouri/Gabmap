@@ -30,10 +30,23 @@ characterize the average difference within the sites in the cluster, and the
 average difference between the sites in the cluster and the rest of
 the sites in the data set with respect to given item. Items whose
 within difference is low, and between difference is high are regarded
-as characteristic items, "shibboleths". The aggregate score provided
-is either difference (default) or ratio of these two quantities. To
-make the difference meaningful across different data sets, by default
-the difference scores are normalized.
+as characteristic items, "shibboleths". Since the raw differences
+values differ based on different data sets, they are normalized so
+that the differences are comparable across different data sets. The 
+aggregate score provided is the difference of these two quantities.
+<p><a name="MissingData"><b>Missing values</b></a><br>
+Calculation of differences between individual pairs of sites may fail,
+typically, due to missing values (e.g., a pronunciation that has not
+been recorded in a particular site). This may affect the
+scale and the reliability of the average distance calculations  used
+for this method. The option "Missing values" allows you to specify how to
+treat missing values. A number between 0 and 1 is interpreted as the
+minimum ratio of missing data allowed. While a number greater
+than one indicates the absolute number of missing values allowed. If
+the ratio or number of missing values is greater than the specified
+limit the score is will show 'NA'. Otherwise, the average distances
+will be calculated ignoring the missing values.
+
 <li> The second method labeled "<i>Categorical</i>" is loosely based on 
 <blockquote>
 Martijn Wieling and John Nerbonne (2011). <a

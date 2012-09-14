@@ -210,22 +210,21 @@ function checkdeterminantoptions() {
             zselected = "selected"
             nselected = ""
 
-        sys.stdout.write('''<br>Normalization:
-        <select name="norm">
-        <option value="none" {}>none</option>
-        <option value="zscore" {}>z-score</option>
-        </select>
-        '''.format(nselected, zselected))
-        sys.stdout.write('''<br>NA's: 
-        <input type="text" size=3 name="narate" value={}> (Either an integer, or a
-        ratio indicateing maximum number of NA's allowed).
-        '''.format(na_val))
+#        sys.stdout.write('''<br>Normalization:
+#        <select name="norm">
+#        <option value="none" {}>none</option>
+#        <option value="zscore" {}>z-score</option>
+#        </select>
+#        '''.format(nselected, zselected))
+        sys.stdout.write('''<br>Missing values: 
+        <input type="text" size=3 name="narate" value={}>{}
+        '''.format(na_val,u.html.help('cludetmethod#MissingData')))
 
-        sys.stdout.write('''<br>Use ratio? 
-               <input type="checkbox" name="ratio" value="ratio" {}>
-               if checked overall scores is `between / within', otherwise
-               `between - within'.
-        '''.format(ratiosel))
+#        sys.stdout.write('''<br>Use ratio? 
+#               <input type="checkbox" name="ratio" value="ratio" {}>
+#               if checked overall scores is `between / within', otherwise
+#               `between - within'.
+#        '''.format(ratiosel))
 
         sys.stdout.write('</div>\n')
 
