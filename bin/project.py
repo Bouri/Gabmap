@@ -935,11 +935,6 @@ if not method.startswith('num') and not method.startswith('dif'):
     os.chdir('cludet')
     os.system('$PYTHON3 $APPDIR/util/detpre.py')
     os.chdir('..')
-    for i in 'cludet2 cludet2/_'.split():
-        os.mkdir(i)
-    fp = open('cludet2/nclusters', 'w', encoding='utf-8')
-    fp.write('6\n')
-    fp.close()
 
 if method.startswith('dif'):
     fp = open('diff/diff.txt', 'wt', encoding='iso-8859-1')
@@ -1095,13 +1090,6 @@ if not method.startswith('num') and not method.startswith('dif'):
     u.queue.enqueue(path + '/cludet', make.format({'appdir': u.config.appdir,
                                                    'python3': u.config.python3,
                                                    'target': 's1'}))
-
-    fp = open('{}/templates/Makefile-cludet2'.format(u.config.appdir), 'r')
-    make = fp.read()
-    fp.close()
-    u.queue.enqueue(path + '/cludet2', make.format({'appdir': u.config.appdir,
-                                                    'python3': u.config.python3,
-                                                    'target': 's1'}))
 
 fp = open('{}/templates/Makefile-prob'.format(u.config.appdir), 'r')
 make = fp.read()

@@ -16,7 +16,7 @@ from p.clusters import methods, colors
 
 #| globals
 
-title = 'cluster determinants (difference based)'
+title = 'cluster determinants'
 
 #| functions
 
