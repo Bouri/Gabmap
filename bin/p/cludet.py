@@ -92,6 +92,10 @@ function checkdeterminantoptions() {
         else:
             method, groups = ('wa', 6)
 
+        fp = open('../data/Method', 'rt')
+        project_type = fp.read().strip()
+        fp.close()
+
         sys.stdout.write('''<p>
         <form action="{}bin/cludetform" method="post" enctype="multipart/form-data">
         <input type="hidden" name="p" value="{}">
@@ -157,10 +161,15 @@ function checkdeterminantoptions() {
             </span>\n
             '''.format(i, c))
 
-        det_methods =  {
-            'shibboleth': 'Distance based',
-            'importance': 'Categorical'
-        }
+        if project_type.startswith('lev'):
+            det_methods =  {
+                'shibboleth': 'Distance based',
+                'importance': 'Categorical'
+            }
+        else:
+            det_methods =  {
+                'shibboleth': 'Distance based'
+            }
 
         if os.access('clusterdet-method', os.F_OK):
             fp = open('clusterdet-method', 'r')
@@ -381,78 +390,80 @@ function checkdeterminantoptions() {
                 sys.stdout.write(u.html.img(p + '-itemmap', usemap="map1", 
                                     idx=1, pseudoforce=True) + '\n')
 
+        if project_type.startswith('lev'):
     # step 4
-        if (os.access('currentitem', os.F_OK)):
-            sys.stdout.write('''
-                <h3 id="s4">Step 4: show the distribution of relevant forms</h3>
-                <form action="{}bin/cludetform" method="post" 
-                      enctype="multipart/form-data">
-                <input type="hidden" name="p" value="{}">
-                <input type="hidden" name="action" value="formdist">
-                <table><tr><th style="padding-right:2em">Patterns in the cluster
-                           </th>
-                           <th>Patterns not in the cluster
-                           </th>
-                       </tr>
-            '''.format(u.config.appurl, project))
+            if (os.access('currentitem', os.F_OK)):
+                sys.stdout.write('''
+                    <h3 id="s4">Step 4: show the distribution of relevant forms</h3>
+                    <form action="{}bin/cludetform" method="post" 
+                          enctype="multipart/form-data">
+                    <input type="hidden" name="p" value="{}">
+                    <input type="hidden" name="action" value="formdist">
+                    <table><tr><th style="padding-right:2em">Patterns in the cluster
+                               </th>
+                               <th>Patterns not in the cluster
+                               </th>
+                           </tr>
+                '''.format(u.config.appurl, project))
 
-            formsin = {}
-            formsout = {}
+                formsin = {}
+                formsout = {}
 
-    #        if (os.access('selectedforms.txt', os.F_OK)):
-    #            fp = open("currentlist.txt", "rt")
-    #            for line in 
+    #            if (os.access('selectedforms.txt', os.F_OK)):
+    #                fp = open("currentlist.txt", "rt")
+    #                for line in 
 
-            fp = open("currentlist.txt", "rt")
-            for line in fp:
-                cin, cout, form = line.strip().split('\t')
-                if int(cin) == 0:
-                    formsout[form] = (cin, cout)
-                else:
-                    formsin[form] = (cin, cout)
-            fp.close()
-            
-
-            selectedforms = set()
-            if (os.access('selectedforms.txt', os.F_OK)):
-                fp = open('selectedforms.txt', 'rt')
+                fp = open("currentlist.txt", "rt")
                 for line in fp:
-                    selectedforms.add(_toStrHtml(line.strip()))
-                    sys.stdout.write('''<!-- {} -->\n'''.format(_toStrHtml(line.strip())))
+                    cin, cout, form = line.strip().split('\t')
+                    if int(cin) == 0:
+                        formsout[form] = (cin, cout)
+                    else:
+                        formsin[form] = (cin, cout)
+                fp.close()
+                
 
-            select_len = len(formsin)
-            if select_len > 10: select_len = 10
-            sys.stdout.write('''
-                    <tr valign="top"> <td>
-                    <select name="formsin" multiple="multiple" size="{}" class="ipaw">
-            '''.format(select_len))
+                selectedforms = set()
+                if (os.access('selectedforms.txt', os.F_OK)):
+                    fp = open('selectedforms.txt', 'rt')
+                    for line in fp:
+                        selectedforms.add(_toStrHtml(line.strip()))
+                        sys.stdout.write('''<!-- {} -->\n'''.format(_toStrHtml(line.strip())))
 
-            for form, (cin, cout) in sorted(formsin.items(), 
-                                        key=lambda x: int(x[1][0])/int(x[1][1]), 
-                                        reverse=True):
-                if (form in selectedforms): sel=' selected="selected"'
-                else: sel = ''
-                sys.stdout.write('''<!-- {} -->\n'''.format(form))
-                sys.stdout.write('''<option value="{}"{}>{} ({}:{})</option>\n
-                '''.format(_iname(form), sel, _toStrHtml(form, True), cin, cout))
+                select_len = len(formsin)
+                if select_len > 10: select_len = 10
+                sys.stdout.write('''
+                        <tr valign="top"> <td>
+                        <select name="formsin" multiple="multiple" size="{}" class="ipaw">
+                '''.format(select_len))
 
-            select_len = len(formsout)
-            if select_len > 10: select_len = 10
-            sys.stdout.write('''</select></td><td>\n
-                   <select name="formsout" multiple="multiple" size="{}" class="ipa2">
-            '''.format(select_len))
-            for form, (cin, cout) in formsout.items():
-                if (form in selectedforms): sel=' selected="selected"'
-                else: sel = ''
-                sys.stdout.write('''<option value="{}"{}>{} ({}:{})</option>\n
-                '''.format(_iname(form), sel, _toStrHtml(form, True), cin, cout))
-            sys.stdout.write('</select></td></tr></table>\n')
-            sys.stdout.write('<input type="submit" value="Show distribution map">\n')
-            sys.stdout.write('</form>')
+                for form, (cin, cout) in sorted(formsin.items(), 
+                                            key=lambda x: int(x[1][0])/int(x[1][1]), 
+                                            reverse=True):
+                    if (form in selectedforms): sel=' selected="selected"'
+                    else: sel = ''
+                    sys.stdout.write('''<!-- {} -->\n'''.format(form))
+                    sys.stdout.write('''<option value="{}"{}>{} ({}:{})</option>\n
+                    '''.format(_iname(form), sel, _toStrHtml(form, True), cin, cout))
 
-            if (os.access('distmap.png', os.F_OK)):
-                sys.stdout.write(u.html.img(p + '-distmap', usemap="map1", 
-                                    idx=1, pseudoforce=True) + '\n')
+                select_len = len(formsout)
+                if select_len > 10: select_len = 10
+                sys.stdout.write('''</select></td><td>\n
+                       <select name="formsout" multiple="multiple" size="{}" class="ipa2">
+                '''.format(select_len))
+                for form, (cin, cout) in formsout.items():
+                    if (form in selectedforms): sel=' selected="selected"'
+                    else: sel = ''
+                    sys.stdout.write('''<option value="{}"{}>{} ({}:{})</option>\n
+                    '''.format(_iname(form), sel, _toStrHtml(form, True), cin, cout))
+                sys.stdout.write('</select></td></tr></table>\n')
+                sys.stdout.write('<input type="submit" value="Show distribution map">\n')
+                sys.stdout.write('</form>')
+
+                if (os.access('distmap.png', os.F_OK)):
+                    sys.stdout.write(u.html.img(p + '-distmap', usemap="map1", 
+                                        idx=1, pseudoforce=True) + '\n')
+
     elif os.access('QUEUED', os.F_OK):
         sys.stdout.write(u.html.busy())
     else:

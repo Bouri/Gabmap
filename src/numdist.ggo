@@ -1,0 +1,8 @@
+package "numdist"
+version "0.1"           # This should alwasy be overwritten
+description "calculates per-item distances from a item-location matrix with numeric values"
+usage "numdist [options] [input_file]"
+purpose "This utility is part of Gabmap (http://www.gabmap.nl/)."
+
+option "norm" - "normlize values" values="none","zscore" default="none" optional
+option "output-dir" - "output directory" string typestr="path" default="_" optional

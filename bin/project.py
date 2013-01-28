@@ -929,7 +929,7 @@ os.chdir('..')
 
 for i in 'cccmaps clusters clumaps diff mdsplots mdsmaps prob plot'.split():
     os.mkdir(i)
-if not method.startswith('num') and not method.startswith('dif'):
+if not method.startswith('dif'):
     for i in 'cludet cludet/_'.split():
         os.mkdir(i)
     os.chdir('cludet')
@@ -1083,7 +1083,7 @@ u.queue.enqueue(path + '/clumaps', make.format({'appdir': u.config.appdir,
                                                 'python2': u.config.python2,
                                                 'python2path': u.config.python2path}))
 
-if not method.startswith('num') and not method.startswith('dif'):
+if not method.startswith('dif'):
     fp = open('{}/templates/Makefile-cludet'.format(u.config.appdir), 'r')
     make = fp.read()
     fp.close()

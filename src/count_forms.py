@@ -3,7 +3,7 @@
 """
 Usage count_forms clgroups_file cluster_number data_file
 
-List the forms an item, counting how many times each form occurs
+List the forms of an item, counting how many times each form occurs
 within a given cluster and in the complete data set.
 
 The output is a tab separated list of (1) the number of occurrences 
@@ -24,6 +24,12 @@ def _unquote(s):
 
 if len(sys.argv) != 4:
     sys.exit("Usage %s clgroups_file cluster_number data_file" % sys.argv[0]);
+
+fp = open("../data/Method", 'rt', encoding='iso-8859-1')
+if (fp and not fp.read().startswith("lev")):
+    fp.close()
+    sys.exit(0)
+fp.close()
 
 clgroups = sys.argv[1]
 targetcl = int(sys.argv[2])

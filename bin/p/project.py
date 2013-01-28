@@ -206,7 +206,7 @@ def makepage(path):
     </ul>
     '''.format(u.config.appurl, path.split('-', 1)[1]))
 
-    if method.startswith('lev'):
+    if not method.startswith('dif'):
         sys.stdout.write('''
         <tr><td colspan="2"><hr>
         <tr valign="top">

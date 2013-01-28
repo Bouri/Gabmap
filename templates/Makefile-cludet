@@ -13,6 +13,12 @@ endif
 ifeq ($(CLDETMETHOD),importance)
 	DATAFILES=../data/_/*.data
 endif
+ifeq ($(PTYPE),num)
+	DATAFILES=../data/table.txt
+endif
+ifeq ($(PTYPE),numnorm)
+	DATAFILES=../data/table.txt
+endif
 
 
 OK:  {0[target]} ../data/OK
@@ -31,8 +37,12 @@ distmap.eps: ../map/map.cfg distmap.rgb itemmap.cfg
 
 tip.html: ../map/image.html currentitem
 	rm -f OK
-	$(APP)/util/makelongtip ../map/image.html \
-						    ../data/_/`cat currentitem`.data tip.html
+	if [ $(PTYPE) = 'levfeat-tok' -o $(PTYPE) = 'lev' ]; then \
+		$(APP)/util/makelongtip ../map/image.html \
+						    ../data/_/`cat currentitem`.data tip.html;\
+	else \
+		cp ../map/image.html tip.html;\
+	fi 
 
 distmap.rgb: selectedforms.txt currentitem
 	rm -f OK
@@ -93,6 +103,10 @@ score.txt: clgroups.txt $(DATAFILES) currentcl clusterdet-method clusterdet-para
 					 -l ../data/labels.txt \
 					 -o _/`basename $$i .data`.diff \
 					$$i;\
+			elif [ $(PTYPE) = 'num' ]; then \
+				$(APP)/util/numdist; \
+			elif [ $(PTYPE) = 'numnorm' ]; then \
+				$(APP)/util/numdist  --norm="zscore"; \
 			fi;\
 		done; \
 		$(APP)/util/clusterdet -c `cat currentcl` \

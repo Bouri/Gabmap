@@ -7,7 +7,7 @@ CFLAGS=-std=gnu99 -Wall -g $(INCLUDES)
 LIBS=$(shell pkg-config --libs glib-2.0) -lm
 LDLIBS=$(LIBS)
 
-EXEC=clusterdet count_forms formstorgb makelongtip
+EXEC=clusterdet count_forms formstorgb makelongtip numdist
 BINDIR=../util
 
 %.cmdline.c: %.ggo
@@ -16,16 +16,21 @@ BINDIR=../util
 %.cmdline.h: %.ggo
 	gengetopt --unamed-opts --set-version=$(VERSION) -i $^ -F $(^:%.ggo=%.cmdline)
 
-CSRCS=clusterdet.c strutils.c dist_matrix.c
+CLUDET_SRCS=clusterdet.c strutils.c dist_matrix.c
 
-COBJS=$(CSRCS:.c=.o) clusterdet.cmdline.o
+NUMDIST_SRCS=numdist.c strutils.c
 
-OBJECTS=$(COBJS)
-SRCS=$(CSRCS)
+CLUDET_OBJ=$(CLUDET_SRCS:.c=.o) clusterdet.cmdline.o
+NUMDIST_OBJ=$(NUMDIST_SRCS:.c=.o) numdist.cmdline.o
+
+OBJECTS=$(CLUDET_OBJ) $(NUMDIST_OBJ)
+SRCS=$(CLUDET_SRCS) $(NUMDIST_SRCS)
 
 all: $(EXEC)
 
-clusterdet: $(COBJS) 
+clusterdet: $(CLUDET_OBJ) 
+
+numdist: $(NUMDIST_OBJ) 
 
 depend: 
 	$(CC) $(CFLAGS) -MM -MG $(SRCS) >.depend
@@ -51,3 +56,6 @@ install:
 	cp $(EXEC) $(BINDIR)
 
 include .depend
+
+.INTERMEDIATE:
+.SECONDARY:
