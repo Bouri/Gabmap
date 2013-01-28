@@ -1,7 +1,7 @@
 OK: ../data/table.txt
 	rm -f OK
 	rm -f tmp*
-	R --no-save < {0[appdir]}util/num.R
+	R --no-save --args {0[alpha]} < {0[appdir]}util/num.R
 	{0[python3]} {0[appdir]}util/numbox
 	{0[python3]} {0[appdir]}util/difok diff.txt || \
 		diffix -a 1 -o tmp.diff diff.txt ../map/map.coo || \

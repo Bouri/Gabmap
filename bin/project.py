@@ -974,9 +974,15 @@ if method.startswith('num'):
     fp = open('{}/templates/Makefile-diffnum'.format(u.config.appdir), 'r')
     make = fp.read()
     fp.close()
-    u.queue.enqueue(path + '/diff', make.format({'appdir': u.config.appdir,
-                                                 'python3': u.config.python3,
-                                                 'python3path': u.config.python3path}))
+    if cronbachalpha:
+        alpha = 'alpha'
+    else:
+        alpha = 'noalpha'
+    u.queue.enqueue(path + '/diff', 
+                            make.format({'appdir': u.config.appdir,
+                                         'python3': u.config.python3,
+                                         'python3path': u.config.python3path,
+                                         'alpha': alpha}))
 
 elif method.startswith('lev'):
     fp = open('{}templates/Makefile-diff'.format(u.config.appdir), 'r')

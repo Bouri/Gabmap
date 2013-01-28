@@ -1,6 +1,13 @@
 
 library(iL04)
 
+args <- commandArgs(trailingOnly = TRUE)
+if (as.character(args[1]) == 'alpha') {
+    calculate_alpha = TRUE
+} else {
+    calculate_alpha = FALSE
+}
+
 # from "alpha {psychometric}"
 # Arguments
 #   x   Data.frame or matrix object with rows corresponding individuals and columns to items
@@ -75,7 +82,6 @@ width <- max(6, min(16, 1 + .2 * length(a[1,])))
 
 postscript(file='../data/boxplot%02d.eps', width=width, height=8, onefile=FALSE, horizontal=FALSE, paper='special')
 par(mar=c(20, 3, 1, 1) + 0.1)
-boxplot(a, pars=list(boxwex=0.8, staplewex=0.5, outwex=0.5, las=3))
 
 if (normalise) {
   for (i in 1:length(a[1,])) {
@@ -89,16 +95,21 @@ if (normalise) {
       }
     }
   }
-  boxplot(a, pars=list(boxwex=0.8, staplewex=0.5, outwex=0.5, las=3))
 }
+
+boxplot(a, pars=list(boxwex=0.8, staplewex=0.5, outwex=0.5, las=3))
 
 dev.off()
 
 aa <- apply(a, 2, dist)
 
 options(digits=4)
-ca <- format(try(cronalpha(aa)))
-cat(ca, '\n', sep='', file='ca.txt')
+if(calculate_alpha) {
+    ca <- format(try(cronalpha(aa)))
+    cat(ca, '\n', sep='', file='ca.txt')
+}  else {
+    cat('skipped\n', sep='', file='ca.txt')
+}
 
 d <- length(a[,1])
 m <- matrix(0, nrow=d, ncol=d)
