@@ -33,6 +33,7 @@ struct options {
     long  na_limit;
     double  na_rate;
     int norm;
+    int gmean;
     int diff;
 } opt;
 
@@ -149,7 +150,10 @@ int main(int argc, char **argv)
                 between_score = avg_d_between;
             }
 
-            if (opt.norm || opt.diff) {
+            if(opt.gmean){
+                score = sqrt(between_score * between_score +
+                             within_score * within_score);
+            }else if (opt.norm || opt.diff) {
                 score = between_score - within_score ;
             } else {
                 score = (within_score == 0.0 && between_score == 0.0)
@@ -264,6 +268,11 @@ void parse_cmdline(int argc, char **argv, struct options *opt)
     opt->diff = 0;
     if (ggo.diff_given) {
         opt->diff = 1;
+    }
+    
+    opt->gmean = 0;
+    if (ggo.gmean_given) {
+        opt->gmean = 1;
     }
 
     opt->norm = 0;

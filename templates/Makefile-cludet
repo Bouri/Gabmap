@@ -109,7 +109,7 @@ score.txt: clgroups.txt $(DATAFILES) currentcl clusterdet-method clusterdet-para
 				$(APP)/util/numdist  --norm="zscore"; \
 			fi;\
 		done; \
-		$(APP)/util/clusterdet -c `cat currentcl` \
+		$(APP)/util/clusterdet -G -c `cat currentcl` \
 						   -C clgroups.txt \
 						   `cat clusterdet-params` \
 						   _/*.diff \

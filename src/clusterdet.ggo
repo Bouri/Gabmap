@@ -23,6 +23,7 @@ option "cluster" c "number of the target cluster"
 
 option "normm" - "normlize scores" values="none","zscore" default="none" optional
 
+option "gmean" G "use geometric mean of 'between' and 'within' scores ad aggregate score (overrides --diff)" optional
 option "diff" D "take the difference of between/wtihin score instead of division (implied by --norm)" optional
 
 option "ignore-na" I "maximum number or ratio of the NA's values \
