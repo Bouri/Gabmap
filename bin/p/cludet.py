@@ -52,11 +52,25 @@ def makepage(path):
 
     sys.stdout.write(u.html.head(ltitle, tip=True, maptip=True, tipfile='tip.html'))
     sys.stdout.write('''<script  language="JavaScript">
+function checkmanualclustering() {
+    var e = document.cluster.mthd;
+    var v = e.options[e.selectedIndex].value;
+    mform = document.getElementById("manualcluster");
+    mform.style.visibility = "hidden";
+    mform.style.display = "none";
+    if (v == "man") {
+        mform.style.visibility = "visible";
+        mform.style.display = "block";
+        mform.style.border = "thin dotted gray";
+        mform.style.margin = "5px 0px 5px 0px";
+        document.cluster.n.value="2";
+    }
+}
 function checkdeterminantoptions() {
-    e = document.determinant.detmethod;
-    v = e.options[e.selectedIndex].value;
-    shib = document.getElementById('shibopts')
-    imp = document.getElementById('impopts')
+    var e = document.determinant.detmethod;
+    var v = e.options[e.selectedIndex].value;
+    var shib = document.getElementById('shibopts')
+    var imp = document.getElementById('impopts')
 
     shib.style.visibility = 'hidden';
     shib.style.display = 'none';
@@ -70,6 +84,39 @@ function checkdeterminantoptions() {
         imp.style.visibility = 'visible';
         imp.style.display = 'block';
     }
+}
+function moverows(list1, list2)
+{
+    var sel='';
+    var seltext='';
+    for (i = list1.options.length - 1; i >= 0; i--) {
+        if (list1.options[i].selected == true) {
+            sel=list1.options[i].value;
+            seltext=list1.options[i].text;
+            var newrow = new Option(seltext,sel);
+            list2.options[list2.length]=newrow;
+            list1.options[i]=null;
+        }
+    }
+}
+function submitclusterform()
+{
+    var form = document.cluster;
+    var m = form.mthd.options[form.mthd.selectedIndex].value;
+    var outlist = form.labelsout;
+    var inlist = form.labelsin;
+
+    if (m == "man") {
+        form.lin.value = "";
+        form.lout.value = "";
+        for (i = inlist.options.length - 1; i >= 0; i--) {
+            form.lin.value += inlist.options[i].value + "#";
+        }
+        for (i = outlist.options.length - 1; i >= 0; i--) {
+            form.lout.value += outlist.options[i].value + "#";
+        }
+    }
+    form.submit();
 }
 </script>
         ''')
@@ -97,14 +144,16 @@ function checkdeterminantoptions() {
         fp.close()
 
         sys.stdout.write('''<p>
-        <form action="{}bin/cludetform" method="post" enctype="multipart/form-data">
+        <form name="cluster" action="{}bin/cludetform" method="post" enctype="multipart/form-data">
         <input type="hidden" name="p" value="{}">
         <input type="hidden" name="action" value="cluster">
         <fieldset style="line-height:150%"><legend>change parameters</legend>
         Clustering method:
-        <select name="mthd">
+        <select name="mthd" onchange="checkmanualclustering()">
         '''.format(u.config.appurl, project))
+        methods['man'] = "Manual"
         for i in sorted(methods):
+            sys.stdout.write('<!--{}:{} -->\n'.format(i, methods[i]))
             if i == method:
                 sys.stdout.write('<option selected="selected" value="{}">{}</option>\n'.format(i, methods[i]))
             else:
@@ -121,12 +170,72 @@ function checkdeterminantoptions() {
                 sys.stdout.write('<option selected="selected">{}</option>\n'.format(i))
             else:
                 sys.stdout.write('<option>{}</option>\n'.format(i))
+
+        try:
+            fp = open('currentcl', 'rt')
+            curclnum = int(fp.read().rstrip())
+            fp.close()
+        except:
+            curclnum =  1
+
+        labels_in = []
+        labels_out = []
+        if os.access('clgroups.txt', os.F_OK):
+            fp = open ('clgroups.txt', 'r')
+            for line in fp:
+                (gr, label) = line.strip().split()
+                if int(gr) == curclnum:
+                    labels_in.append(label)
+                else:
+                    labels_out.append(label)
+        else:
+            fp = open ('../data/labels.txt', 'r')
+            for line in fp:
+                (gr, label) = line.strip().split()
+                labels_out.append(label)
+
+        sys.stdout.write('</select><br>')
+
+        moptvisible = '"visibility:hidden;display:none"';
+        if method == 'man':
+            moptvisible = '"border:thin dotted gray;margin:5px 0px 5px 0px;visibility:visible;display:block"';
         sys.stdout.write('''
-        </select><br>
-        <input type="submit" value="Cluster">
-        </fieldset>
-        </form>
+        <div id="manualcluster" style={}>
+        <input type="hidden" name="lin" value="x">
+        <input type="hidden" name="lout" value="y">
+        <table border="0">
+        <tr><th>Labels outside the cluster</th>
+            <th></th>
+            <th>Labels in the cluster</th>
+        <tr>
+            <td><select name="labelsout" style="width:25em" size="10" multiple>
+        '''.format(moptvisible))
+        for l in labels_out:
+            sys.stdout.write('<option value="{}">{}</option>\n'.format(l, l))
+
+        sys.stdout.write('''
+            <td valign="middle">
+                <input type="Button" value=">>" 
+                    onClick="moverows(document.cluster.labelsout,document.cluster.labelsin)"><br>
+                <input type="Button" value="<<"
+                    onClick="moverows(document.cluster.labelsin,document.cluster.labelsout)"><br>
+            </td>
+            <td><select name="labelsin" style="width:25em" size="10" multiple>
         ''')
+        for l in labels_in:
+            sys.stdout.write('<option value="{}">{}</option>\n'.format(l, l))
+
+        sys.stdout.write('''
+            </select>
+            </td>
+        </tr>
+        </table>
+        </div>
+        ''')
+        sys.stdout.write('<input type="button" value="Cluster" onclick="submitclusterform()"></fieldset></form>')
+
+
+
         if os.access('clmap.png', os.F_OK):
             sys.stdout.write(u.html.img(p + '-clmap', usemap="map1",
                                         idx=1, pseudoforce=True) + '\n')
@@ -140,12 +249,6 @@ function checkdeterminantoptions() {
         <input type="hidden" name="action" value="determinant">
         '''.format(u.config.appurl, project))
 
-        try:
-            fp = open('currentcl', 'rt')
-            curclnum = int(fp.read().rstrip())
-            fp.close()
-        except:
-            curclnum =  1
 
         sys.stdout.write('<fieldset style="line-height:150%">\n')
         sys.stdout.write('<legend>determinant options</legend>\n');
@@ -428,7 +531,6 @@ function checkdeterminantoptions() {
                     fp = open('selectedforms.txt', 'rt')
                     for line in fp:
                         selectedforms.add(_toStrHtml(line.strip()))
-                        sys.stdout.write('''<!-- {} -->\n'''.format(_toStrHtml(line.strip())))
 
                 select_len = len(formsin)
                 if select_len > 10: select_len = 10

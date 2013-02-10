@@ -52,6 +52,47 @@ def setClParams():
     for f in 'score.txt score-failed.txt currentitem currentcl distmap.eps distmap.png currentlist.txt'.split():
             if os.access(f, os.F_OK):
                 os.remove(f);
+
+    if method == 'man':
+        cin = getval('lin').rstrip('#').split('#')
+        cout = getval('lout').rstrip('#').split('#')
+        assert (len(cin) > 0 and len(cout) > 0)
+        i = 0
+        j = 0
+        fp = open('cluster.txt', 'w')
+        if len(cin) > 1:
+            fp.write('1 0.1\n')
+            fp.write('L {}\n'.format(cin[0]))
+            fp.write('L {}\n'.format(cin[1]))
+            dd = 0.1
+            delta = 0.01
+            for i in range(2,len(cin)):
+                fp.write('{} {}\n'.format(i, dd + i*delta))
+                fp.write('L {}\n'.format(cin[i]))
+                fp.write('C {}\n'.format(i-1))
+        if len(cout) > 1:
+            fp.write('{} 0.1\n'.format(i+1))
+            fp.write('L {}\n'.format(cout[0]))
+            fp.write('L {}\n'.format(cout[1]))
+            for j in range(2,len(cout)):
+                fp.write('{} {}\n'.format(i+j, dd + j*delta))
+                fp.write('L {}\n'.format(cout[j]))
+                fp.write('C {}\n'.format(i+j-1))
+        else:
+            fp.write('{} 0.9\n'.format(i+1))
+            fp.write('L {}\n'.format(cout[0]))
+            fp.write('C {}\n'.format(i))
+        if len(cin) == 1:
+            fp.write('{} 0.9\n'.format(j+1))
+            fp.write('L {}\n'.format(cin[0]))
+            fp.write('C {}\n'.format(j))
+        else:
+            fp.write('{} 0.9\n'.format(j+i))
+            fp.write('C {}\n'.format(i))
+            fp.write('C {}\n'.format(i+j))
+        fp.close()
+
+
     u.queue.enqueue(path + '/cludet', 
                     make.format({'appdir': u.config.appdir, 
                                  'python3': u.config.python3, 
@@ -204,6 +245,5 @@ if not os.access('QUEUED', os.F_OK):
     elif a == 'formdist':
         setForms()
         target = '#s4'
-
 
 sys.stdout.write('Location: goto?p={}-cludet{}\n\n'.format(path, target))
