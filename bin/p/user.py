@@ -40,9 +40,16 @@ def makepage(user):
         </div>
         '''
 
+    try:
+        f = open('maxprojects', 'r')
+        maxprojects = int(f.read().strip())
+        f.close()
+    except:
+        maxprojects = _c.maxprojects
+
     if user.startswith('demo'):
         template = 'p-user-demo.html'
-    elif count >= _c.maxprojects:
+    elif count >= maxprojects:
         template = 'p-user-full.html'
     else:
         template = 'p-user.html'
@@ -53,7 +60,7 @@ def makepage(user):
         'projects':projects,
         'username':user,
         'appurl':_c.appurl,
-        'count':_c.maxprojects,
+        'count':maxprojects,
         'helpmap': _h.help('homemap'),
         'helpshmap': _h.help('homedisperse'),
         'helppseudo': _h.help('homepseudo'),
