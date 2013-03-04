@@ -151,8 +151,9 @@ int main(int argc, char **argv)
             }
 
             if(opt.gmean){
-                score = sqrt(between_score * between_score +
-                             within_score * within_score);
+                double btw = (between_score < 0) ? 0 : between_score;
+                double wtn = (within_score > 0) ? 0 : within_score;
+                score = sqrt(btw*btw + wtn*wtn);
             }else if (opt.norm || opt.diff) {
                 score = between_score - within_score ;
             } else {

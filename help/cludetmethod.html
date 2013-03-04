@@ -11,13 +11,12 @@ Currently, Gabmap implements two cluster determinant methods. Cluster
 determinants try to find items that are characteristic of a given
 cluster (set of sites).
 <ul>
-<li> The first (recommended) cluster determinant, labeled 
+<li> The first (<b>recommended</b>) cluster determinant, labeled 
     "<i>Distance based</i>" implements the method described in
 <blockquote>
-Jelena Prokić, Çağrı Çöltekin &amp; John Nerbonne (2012).
-<a href="http://aclweb.org/anthology-new/W/W12/W12-0211.pdf">Detecting
-Shibboleths
-  </a>. In: M. Butt &amp; J. Prokić (eds.)
+   Jelena Prokić, Çağrı Çöltekin &amp; John Nerbonne (2012).
+   <a href="http://aclweb.org/anthology-new/W/W12/W12-0211.pdf">Detecting
+   Shibboleths</a>. In: M. Butt &amp; J. Prokić (eds.)
   <i>Visualization of Language Patters and Uncovering Language History
   from Multilingual Resources.</i> Workshop at the 13th Conference of
   the European Chapter of the Association for computational Linguistics.
@@ -30,10 +29,12 @@ characterize the average difference within the sites in the cluster, and the
 average difference between the sites in the cluster and the rest of
 the sites in the data set with respect to given item. Items whose
 within difference is low, and between difference is high are regarded
-as characteristic items, "shibboleths". Since the raw differences
+as characteristic items, <i>shibboleths</i>. Since the raw differences
 values differ based on different data sets, they are normalized so
 that the differences are comparable across different data sets. The 
-aggregate score provided is the difference of these two quantities.
+aggregate score provided is the geometric mean of these two quantities
+if <i>within difference</i> is negative and <i>between difference</i>
+positive, `0' otherwise.
 <p><a name="MissingData"><b>Missing values</b></a><br>
 Calculation of differences between individual pairs of sites may fail,
 typically, due to missing values (e.g., a pronunciation that has not
