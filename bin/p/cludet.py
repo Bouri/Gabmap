@@ -50,7 +50,11 @@ def makepage(path):
 
 #    pnum =  path.split('-')[-2].split('_')[-1]
 
-    sys.stdout.write(u.html.head(ltitle, tip=True, maptip=True, tipfile='tip.html'))
+    if os.access('tip.html', os.F_OK):
+        tipfile = 'tip.html'
+    else:
+        tipfile = '../map/image.html'
+    sys.stdout.write(u.html.head(ltitle, tip=True, maptip=True, tipfile=tipfile))
     sys.stdout.write('''<script  language="JavaScript">
 function checkmanualclustering() {
     var e = document.cluster.mthd;
