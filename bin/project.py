@@ -932,9 +932,6 @@ for i in 'cccmaps clusters clumaps diff mdsplots mdsmaps prob plot'.split():
 if not method.startswith('dif'):
     for i in 'cludet cludet/_'.split():
         os.mkdir(i)
-    os.chdir('cludet')
-    os.system('$PYTHON3 $APPDIR/util/detpre.py')
-    os.chdir('..')
 
 if method.startswith('dif'):
     fp = open('diff/diff.txt', 'wt', encoding='iso-8859-1')
