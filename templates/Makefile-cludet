@@ -75,7 +75,7 @@ itemmap.cfg: ../map/map.cfg map.ex
 
 map.ex: currentcl clgroups.txt
 	grep "^\s*`cat currentcl`" clgroups.txt \
-		| iconv -f utf-8 -t ISO8859-9 \
+		| ( test -f ../data/UTF && iconv -f utf-8 -t ISO8859-9 || cat) \
 		> map.ex
 
 s2: score.txt

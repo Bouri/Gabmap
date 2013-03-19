@@ -178,20 +178,27 @@ function submitclusterform()
         except:
             curclnum =  1
 
+        if os.access('UTF', os.F_OK):
+            enc = 'utf-8'
+        else:
+            enc = 'iso-8859-1'
+
+
         labels_in = []
         labels_out = []
         if os.access('clgroups.txt', os.F_OK):
-            fp = open ('clgroups.txt', 'r')
+            fp = open ('clgroups.txt', 'r', encoding=enc)
             for line in fp:
-                (gr, label) = line.strip().split()
+                (gr, label) = line.split(None, 1)
+                label = label.strip().strip('"')
                 if int(gr) == curclnum:
                     labels_in.append(label)
                 else:
                     labels_out.append(label)
         else:
-            fp = open ('../data/labels.txt', 'r')
+            fp = open ('../data/labels.txt', 'r', encoding=enc)
             for line in fp:
-                (gr, label) = line.strip().split()
+                label = line.split(None, 1)[1].strip()
                 labels_out.append(label)
 
         sys.stdout.write('</select><br>')
