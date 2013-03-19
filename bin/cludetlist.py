@@ -67,7 +67,7 @@ sys.stdout.write('{}\t{}\t{}\tItem\n'.format(score_name, wtn_name, btw_name))
 
 fp = open(filename, 'rt')
 for line in fp:
-    a, b, c, d = line.split()
+    a, b, c, d = line.rstrip().split("\t")
     sys.stdout.write('{}\t{}\t{}\t{}\n'.format(a, b, c, 
                                             re.sub('_([0-9]+)_', num2chr, d)))
 fp.close()

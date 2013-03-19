@@ -438,7 +438,7 @@ function submitclusterform()
 
             fp = open('score.txt', 'rt')
             for line in fp:
-                r, w, b, f = line.split()
+                r, w, b, f = line.split("\t")
                 item = f
                 if item == curitem:
                     sel = ' selected="selected"'
