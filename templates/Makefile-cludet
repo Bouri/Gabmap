@@ -19,6 +19,9 @@ endif
 ifeq ($(PTYPE),numnorm)
 	DATAFILES=../data/table.txt
 endif
+ifeq ($(PTYPE),bin)
+	DATAFILES=../data/_/*.data
+endif
 
 
 OK:  {0[target]} ../data/OK
@@ -98,6 +101,11 @@ score.txt: clgroups.txt $(DATAFILES) currentcl clusterdet-method clusterdet-para
 					"$$i";\
 			elif [ $(PTYPE) = 'lev' ]; then \
 				leven -c -n $(NPLACES) \
+					 -l ../data/labels.txt \
+					 -o "_/`basename \"$$i\" .data`.diff" \
+					"$$i";\
+			elif [ $(PTYPE) = 'bin' ]; then \
+				leven -B -c -n $(NPLACES) \
 					 -l ../data/labels.txt \
 					 -o "_/`basename \"$$i\" .data`.diff" \
 					"$$i";\
