@@ -348,7 +348,7 @@ else:
     for name, line in lines:
         n += len(line.split())
 
-    m = 10000
+    m = 50000
     if n > m:
         u.html.exitMessage('Error', '''
         The map is too complex.
