@@ -193,7 +193,9 @@ def makepage(path):
                     sys.stdout.write(' &raquo;')
                 else:
                     sys.stdout.write(' <a href="alignpage?{1}-{0}">&raquo;</a>'.format(page + 1, pnum))
-                sys.stdout.write('<p>\n')
+                sys.stdout.write('''<br>&rarr; 
+                    <a href="aligndownload?p=project_{}" target="_blank">download as a text file </a><br>
+                <p>\n'''.format(pnum))
             intab = False
             inItem = False
             for line in fp:
