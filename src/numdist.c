@@ -45,6 +45,9 @@ void parse_cmdline(int argc, char **argv, struct options *opt);
 struct numtable *read_numtable(const char *fname);
 void normalize_numtable(struct numtable *tbl);
 
+char *fname_code(const char *s);
+char *fname_decode(const char *s);
+
 int main(int argc, char **argv)
 {
     struct numtable *tbl;
@@ -72,8 +75,8 @@ int main(int argc, char **argv)
     int i, loc1, loc2;
     for(i=0; i < tbl->nitems; i++) {
         char *fname = malloc(strlen(opt.output_dir) + 
-                             strlen(tbl->items[i]) + 7);
-        sprintf(fname, "%s/%s.diff", opt.output_dir, tbl->items[i]);
+                             strlen(tbl->items[i])*4 + 7);
+        sprintf(fname, "%s/%s.diff", opt.output_dir, fname_code(tbl->items[i]));
         FILE *fp = fopen(fname, "w");
         fprintf(fp, "%d\n", tbl->nlabels);
         for(loc1 = 0; loc1 < tbl->nlabels; loc1++) {
@@ -86,6 +89,7 @@ int main(int argc, char **argv)
             }
         }
         fclose(fp);
+        free(fname);
     }
 
     // TODO: cleanup tbl
@@ -262,3 +266,54 @@ void parse_cmdline(int argc, char **argv, struct options *opt)
 
     cmdline_parser_free (&ggo);
 }
+
+
+/* fnmae_code() replaces non-alphanumeric (or +, -) characters 
+ * with _NUM_ where NUM is the numeric 
+ */
+char *fname_code(const char *s)
+{
+    char *tmp = malloc(4*strlen(s));
+    const char *ch; 
+    char *ret;
+    int i;
+
+    ch = s;
+
+    i = 0;
+    while(*ch) {
+        if (*ch == '/') {
+            strcat(tmp, "_47_");
+            i += 4;
+        } else {
+            tmp[i] = *ch;
+            tmp[i+1] = '\0';
+            i++;
+        }
+        ch++;
+    }
+
+    ret = strdup(tmp);
+    free(tmp);
+    return ret;
+}
+
+char *fname_decode(const char *s)
+{
+    char *tmp = strdup(s);
+    char *ch;
+
+    ch = tmp;
+    while((ch = strstr(tmp, "_47_"))) {
+        char *c = ch + 4;
+        *ch = '/';
+        *(c-3) = *c;
+        while (*c) {
+            c++;
+            *(c-3) = *c;
+        }
+    }
+
+    return(tmp);
+}
+
