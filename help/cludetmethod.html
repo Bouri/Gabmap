@@ -31,10 +31,14 @@ the sites in the data set with respect to given item. Items whose
 within difference is low, and between difference is high are regarded
 as characteristic items, <i>shibboleths</i>. Since the raw differences
 values differ based on different data sets, they are normalized so
-that the differences are comparable across different data sets. The 
-aggregate score provided is the geometric mean of these two quantities
-if <i>within difference</i> is negative and <i>between difference</i>
-positive, `0' otherwise.
+that the differences are comparable across different data sets. The
+aggregate score primarily used for sorting the items is simply 
+<i>between_score - within_score</i>. 
+(In earlier versions of Gabmap, an aggregate score based on geometric
+mean between these two quantities are used such that the score is the
+geometric mean of these two quantities if <i>within difference</i> is
+negative and <i>between difference</i> positive, `0' otherwise.)
+
 <p><a name="MissingData"><b>Missing values</b></a><br>
 Calculation of differences between individual pairs of sites may fail,
 typically, due to missing values (e.g., a pronunciation that has not
