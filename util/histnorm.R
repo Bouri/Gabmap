@@ -31,7 +31,7 @@ histnorm <- function(x,
     i <- h$breaks[1]
     j <- h$breaks[length(h$breaks)]
     xx <- seq(i, j, length = 100)
-    yy <- dnorm(xx, mean(x), sd(x))
+    yy <- dnorm(xx, mean(x, na.rm=TRUE), sd(x,na.rm=TRUE))
     if (is.null(freq)) {
         freq <- h$equidist
     }
