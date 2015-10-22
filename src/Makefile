@@ -16,6 +16,10 @@ BINDIR=../util
 %.cmdline.h: %.ggo
 	gengetopt --unamed-opts --set-version=$(VERSION) -i $^ -F $(^:%.ggo=%.cmdline)
 
+# %.o: %.c
+# 	$(CC) $(CFLAGS) -MM -MG $(SRCS) >.depend; \
+# 	$(CC) $(CFLAGS) -o $@ $<
+
 CLUDET_SRCS=clusterdet.c strutils.c dist_matrix.c
 
 NUMDIST_SRCS=numdist.c strutils.c
@@ -26,7 +30,7 @@ NUMDIST_OBJ=$(NUMDIST_SRCS:.c=.o) numdist.cmdline.o
 OBJECTS=$(CLUDET_OBJ) $(NUMDIST_OBJ)
 SRCS=$(CLUDET_SRCS) $(NUMDIST_SRCS)
 
-all: $(EXEC)
+all: depend $(EXEC)
 
 clusterdet: $(CLUDET_OBJ) 
 
@@ -37,8 +41,6 @@ depend:
 
 clean:
 	rm -f $(OBJECTS) *.cmdline.[ch] clusterdet
-
-include .depend
 
 count_forms: count_forms.py
 	sed s,__PYTHON3__,$(PYTHON3),g $^ > $@
@@ -55,7 +57,7 @@ makelongtip: makelongtip.py
 install:
 	cp $(EXEC) $(BINDIR)
 
-include .depend
+-include .depend
 
 .INTERMEDIATE:
 .SECONDARY:

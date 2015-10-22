@@ -1,11 +1,7 @@
 .depend
 .gdb_history
 clusterdet
-clusterdet.cmdline.c
-clusterdet.cmdline.h
 numdist
-numdist.cmdline.c
-numdist.cmdline.h
 *.o
 count_forms
 formstorgb
