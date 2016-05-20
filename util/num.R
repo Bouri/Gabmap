@@ -78,6 +78,10 @@ con = file("../data/table.txt", open="rt", encoding="iso-8859-1")
 a <- read.table(con, allowEscapes=TRUE, check.names=FALSE)
 close(con)
 
+if (length(rownames(a)) < 3) {
+    calculate_alpha = FALSE
+}
+
 width <- max(6, min(16, 1 + .2 * length(a[1,])))
 
 postscript(file='../data/boxplot%02d.eps', width=width, height=8, onefile=FALSE, horizontal=FALSE, paper='special')
@@ -102,6 +106,10 @@ boxplot(a, pars=list(boxwex=0.8, staplewex=0.5, outwex=0.5, las=3))
 dev.off()
 
 aa <- apply(a, 2, dist)
+
+if (class(aa) == "numeric") { # only two sites
+    aa <- t(as.matrix(aa))
+}
 
 options(digits=4)
 if(calculate_alpha) {
