@@ -61,7 +61,7 @@ missing: preserve
 fillmargin: .5
 
 # Radius for filling if file for clipping is missing
-limit: 50
+limit: 500
 
 # Use limit, even if file for clipping is not missing: yes or no
 uselimit: yes
@@ -943,12 +943,12 @@ if method.startswith('dif'):
             fp.write(data[i][j] + '\n')
     fp.close()
 
-n = max(2, min(8, nPlaces - 1))
-fp = open('{}templates/plot_wm_6_all.cfg'.format(u.config.appdir), 'rb')
+nGroups = max(2, min(8, nPlaces - 1))
+fp = open('{}templates/plot_wm_6_all.cfg'.format(u.config.appdir), 'r')
 d = fp.read()
 fp.close()
-fp = open('clumaps/plot_wm_6_all.cfg', 'wb')
-fp.write(d.format({'nGroups': n}))
+fp = open('clumaps/plot_wm_6_all.cfg', 'w')
+fp.write(d.format({'nGroups': nGroups}))
 fp.close()
 
 if not pseudo:
@@ -1066,17 +1066,17 @@ u.queue.enqueue(path + '/cccmaps', make.format({'appdir': u.config.appdir,
                                                 'python2': u.config.python2,
                                                 'python2path': u.config.python2path}))
 
-n = max(2, min(8, nPlaces - 1))
 fp = open('{}/templates/Makefile-clusters'.format(u.config.appdir), 'r')
 make = fp.read()
 fp.close()
 u.queue.enqueue(path + '/clusters', make.format({'method': 'wa',
-                                                 'groups': n,
+                                                 'groups': nGroups,
                                                  'exp': 1,
                                                  'col': 'col',
                                                  'appdir': u.config.appdir,
                                                  'python3': u.config.python3,
                                                  'python2': u.config.python2,
+                                                 'nGroups': nGroups,
                                                  'python2path': u.config.python2path}))
 
 fp = open('{}/templates/Makefile-clumaps'.format(u.config.appdir), 'r')
@@ -1085,7 +1085,9 @@ fp.close()
 u.queue.enqueue(path + '/clumaps', make.format({'appdir': u.config.appdir,
                                                 'python3': u.config.python3,
                                                 'python2': u.config.python2,
-                                                'python2path': u.config.python2path}))
+                                                'python2path': u.config.python2path,
+                                                'nGroups': nGroups,
+                                                'nGroups': nGroups}))
 
 if not method.startswith('dif'):
     fp = open('{}/templates/Makefile-cludet'.format(u.config.appdir), 'r')
@@ -1093,6 +1095,7 @@ if not method.startswith('dif'):
     fp.close()
     u.queue.enqueue(path + '/cludet', make.format({'appdir': u.config.appdir,
                                                    'python3': u.config.python3,
+                                                   'nGroups': nGroups,
                                                    'target': 's1'}))
 
 fp = open('{}/templates/Makefile-prob'.format(u.config.appdir), 'r')

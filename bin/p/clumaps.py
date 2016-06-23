@@ -75,8 +75,13 @@ def makepage(path):
             bw = ''
         else:
             bw = 'bw'
+        try:
+            with open('../data/stats.txt', 'r') as fp:
+                nPlaces = int(fp.read().strip().split()[0])
+        except:
+            nPlaces = 2
         method = current2[0]
-        n = int(current[1])
+        n = min(int(current[1]), nPlaces)
         current = current[2:]
         logfile = 'plot_{}_{}{}_{}.log'.format(method, n, bw, '_'.join(current))
         if os.access(logfile, os.F_OK):

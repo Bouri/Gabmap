@@ -105,11 +105,16 @@ def setMethod():
         fp.close()
     except:
         col = 'c'
+    try:
+        with open('../data/stats.txt', 'r') as fp:
+            nPlaces = int(fp.read().strip().split()[0])
+    except:
+        nPlaces = 2
     m = getval('m')
     if m == 'wm':
-        n = 6
+        n = min(6, nPlaces)
     else:
-        n = 10
+        n = min(10, nPlaces)
     change(col, n, 'all', m)
 
 def setNumber():
@@ -125,6 +130,12 @@ def setNumber():
         col = 'c'
         method = 'wm'
     n = int(getval('n'))
+    try:
+        with open('../data/stats.txt', 'r') as fp:
+            nPlaces = int(fp.read().strip().split()[0])
+    except:
+        nPlaces = 2
+    n = min(n, nPlaces)
     assert n >= 2 and n <= 12
     change(col, n, 'all', method)
 
@@ -142,6 +153,12 @@ def setSubset():
         col = 'c'
         n = 6
         method = 'wm'
+    try:
+        with open('../data/stats.txt', 'r') as fp:
+            nPlaces = int(fp.read().strip().split()[0])
+    except:
+        nPlaces = 2
+    n = min(n, nPlaces)
     subset = []
     for i in range(1, n + 1):
         if getval('s{}'.format(i)):
@@ -165,6 +182,12 @@ def setBW(bw):
         n = 6
         subset = 'all'
         method = 'wm'
+    try:
+        with open('../data/stats.txt', 'r') as fp:
+            nPlaces = int(fp.read().strip().split()[0])
+    except:
+        nPlaces = 2
+    n = min(n, nPlaces)
     change(bw, n, subset, method)
 
 def setLabels(s):

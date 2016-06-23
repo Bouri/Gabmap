@@ -91,11 +91,16 @@ def setClParams():
             fp.write('C {}\n'.format(i+j))
         fp.close()
 
-
+    try:
+        with open('../data/stats.txt', 'r') as fp:
+            nPlaces = int(fp.read().strip().split()[0])
+    except:
+        nPlaces = 2
     u.queue.enqueue(path + '/cludet', 
                     make.format({'appdir': u.config.appdir, 
                                  'python3': u.config.python3, 
-                                 'target': 's1'}))
+                                 'target': 's1',
+                                 'nGroups': min(6, nPlaces)}))
     u.queue.run()
     time.sleep(2)
 

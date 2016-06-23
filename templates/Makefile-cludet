@@ -157,4 +157,4 @@ cluster-params:
 	rm -f OK
 	(test -f ../cluster/current.txt \
 		&& cut -d' ' -f1-2 ../cluster/current.txt \
-		|| echo "wm 6" )> $@
+		|| echo "wm {0[nGroups]}" )> $@
