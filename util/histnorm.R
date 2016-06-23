@@ -45,6 +45,13 @@ histnorm <- function(x,
     lines(xx, yy, lwd = clwd, col = ccol)
 }
 
-histnorm(differences^2, ccol='blue', col='grey', breaks=40, xlab=expression(Differences^2), main=NULL)
+if (length(differences) > 1) {
+    histnorm(differences^2, ccol='blue', col='grey', 
+             breaks=40, xlab=expression(Differences^2), main=NULL)
+} else {
+    plot(0, type='n', xlab="", ylab="", xlim=c(0,10), ylim=c(0,10), xaxt="n", yaxt="n")
+    text(5, 5, "Only two sites")
+    text(5, 4, "Histogram is not available")
+}
 
 dev.off()
