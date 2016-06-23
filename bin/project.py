@@ -943,11 +943,12 @@ if method.startswith('dif'):
             fp.write(data[i][j] + '\n')
     fp.close()
 
+n = max(2, min(8, nPlaces - 1))
 fp = open('{}templates/plot_wm_6_all.cfg'.format(u.config.appdir), 'rb')
 d = fp.read()
 fp.close()
 fp = open('clumaps/plot_wm_6_all.cfg', 'wb')
-fp.write(d)
+fp.write(d.format({'nGroups': n}))
 fp.close()
 
 if not pseudo:

@@ -141,7 +141,7 @@ function submitclusterform()
             method, groups, col = fp.read().split()
             fp.close()
         else:
-            method, groups = ('wa', 6)
+            method, groups = ('wa', 2)
 
         fp = open('../data/Method', 'rt')
         project_type = fp.read().strip()

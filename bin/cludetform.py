@@ -41,8 +41,7 @@ def setClParams():
     method = getval('mthd')
     groups = int(getval('n'))
 
-    n = int(getval('n'))
-    assert n >= 2 and n <= 12
+    assert groups >= 2 and groups <= 12
     fp = open('{}/templates/Makefile-cludet'.format(u.config.appdir), 'r')
     make = fp.read()
     fp.close()
