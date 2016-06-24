@@ -7,7 +7,7 @@ OK: ../diff/OK
 	echo othermarkers: grp_wm_{0[nGroups]}.map >> map.cfg
 	mapclust -u {0[appdir]}templates/palette12.txt map.cfg tmp.wm 6 | perl -p -e s'!/Graylimit .* def!/Graylimit 0 def!' > wm{0[nGroups]}.eps
 	{0[python3]} {0[appdir]}util/smappost wm{0[nGroups]}.eps
-	PYTHONPATH={0[python2path]} ; mdsplot plot_wm_{0[nGroups]}_all.cfg 2> plot_wm_{0[nGroups]}_all.log
+	PYTHONPATH={0[python2path]} ; mdsplot plot_wm_6_all.cfg 2> plot_wm_{0[nGroups]}_all.log
 	eps2png
 	rm -f tmp*
 	touch OK
