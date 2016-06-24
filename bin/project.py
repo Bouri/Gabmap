@@ -943,7 +943,7 @@ if method.startswith('dif'):
             fp.write(data[i][j] + '\n')
     fp.close()
 
-nGroups = max(2, min(8, nPlaces - 1))
+nGroups = max(2, min(8, nPlaces))
 fp = open('{}templates/plot_wm_6_all.cfg'.format(u.config.appdir), 'r')
 d = fp.read()
 fp.close()
