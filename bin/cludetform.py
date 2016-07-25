@@ -20,6 +20,7 @@ from p.cludetparms import *
 #| globals
 
 target = ''
+nPlaces = 2
 
 #| functions
 
@@ -100,6 +101,7 @@ def setClParams():
                     make.format({'appdir': u.config.appdir, 
                                  'python3': u.config.python3, 
                                  'target': 's1',
+                                 'nGroups': min(6, nPlaces),
                                  'nGroups': min(6, nPlaces)}))
     u.queue.run()
     time.sleep(2)
@@ -166,6 +168,7 @@ def setClDetParams():
     u.queue.enqueue(path + '/cludet', 
                     make.format({'appdir': u.config.appdir, 
                                  'python3': u.config.python3, 
+                                 'nGroups': min(6, nPlaces),
                                  'target': 's2'}))
     u.queue.run()
     while(os.access('QUEUED', os.F_OK)):
@@ -188,6 +191,7 @@ def setItem():
     u.queue.enqueue(path + '/cludet', 
                     make.format({'appdir': u.config.appdir, 
                                  'python3': u.config.python3, 
+                                 'nGroups': min(6, nPlaces),
                                  'target': 's3'}))
     u.queue.run()
     while(os.access('QUEUED', os.F_OK)):
@@ -216,6 +220,7 @@ def setForms():
     u.queue.enqueue(path + '/cludet', 
                     make.format({'appdir': u.config.appdir, 
                                  'python3': u.config.python3, 
+                                 'nGroups': min(6, nPlaces),
                                  'target': 's4'}))
     u.queue.run()
     while(os.access('QUEUED', os.F_OK)):
